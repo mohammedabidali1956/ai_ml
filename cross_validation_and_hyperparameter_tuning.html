@@ -1,0 +1,580 @@
+
+<style>
+  .tb-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
+  .tb{padding:8px 16px;border:0.5px solid var(--color-border-tertiary);background:var(--color-background-secondary);border-radius:var(--border-radius-md);cursor:pointer;font-size:13px;color:var(--color-text-secondary);transition:all .2s}
+  .tb.on{background:var(--color-background-primary);color:var(--color-text-primary);border-color:var(--color-border-primary);font-weight:500}
+  .sec{display:none}.sec.on{display:block}
+  .card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1rem 1.25rem;margin-bottom:14px}
+  .card h3{font-size:15px;font-weight:500;margin:0 0 8px}
+  .code{background:var(--color-background-secondary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:12px 14px;font-family:var(--font-mono);font-size:12px;line-height:1.8;overflow-x:auto;color:var(--color-text-primary);margin:10px 0;white-space:pre}
+  .why{background:var(--color-background-info);border-left:3px solid var(--color-border-info);padding:8px 12px;border-radius:0 var(--border-radius-md) var(--border-radius-md) 0;font-size:12px;color:var(--color-text-info);margin:8px 0}
+  .warn{background:var(--color-background-warning);border-left:3px solid var(--color-border-warning);padding:8px 12px;border-radius:0 var(--border-radius-md) var(--border-radius-md) 0;font-size:12px;color:var(--color-text-warning);margin:8px 0}
+  .good{background:var(--color-background-success);border-left:3px solid var(--color-border-success);padding:8px 12px;border-radius:0 var(--border-radius-md) var(--border-radius-md) 0;font-size:12px;color:var(--color-text-success);margin:8px 0}
+  .danger{background:var(--color-background-danger);border-left:3px solid var(--color-border-danger);padding:8px 12px;border-radius:0 var(--border-radius-md) var(--border-radius-md) 0;font-size:12px;color:var(--color-text-danger);margin:8px 0}
+  p.sub{font-size:13px;color:var(--color-text-secondary);margin:0 0 8px}
+  .hl{background:var(--color-background-warning);color:var(--color-text-warning);padding:1px 5px;border-radius:3px;font-family:var(--font-mono);font-size:12px}
+  .qopt{width:100%;text-align:left;padding:10px 14px;margin:5px 0;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);background:var(--color-background-secondary);cursor:pointer;font-size:13px;color:var(--color-text-primary);transition:all .15s}
+  .qopt:hover{border-color:var(--color-border-primary);background:var(--color-background-primary)}
+  .qopt.c{border-color:#1D9E75!important;background:#E1F5EE!important;color:#085041!important}
+  .qopt.w{border-color:#E24B4A!important;background:#FCEBEB!important;color:#501313!important}
+  .fb{font-size:12px;padding:8px 12px;border-radius:var(--border-radius-md);margin-top:6px;display:none}
+  .fb.on{display:block}
+  .fb.c{background:#E1F5EE;color:#085041;border:0.5px solid #1D9E75}
+  .fb.w{background:#FCEBEB;color:#501313;border:0.5px solid #E24B4A}
+  .fold-row{display:flex;gap:4px;margin:6px 0;align-items:center}
+  .fold-cell{flex:1;height:32px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;transition:all .3s}
+  .fold-train{background:#E6F1FB;color:#0C447C;border:0.5px solid #85B7EB}
+  .fold-test{background:#E1F5EE;color:#085041;border:0.5px solid #5DCAA5}
+  .fold-label{font-size:12px;color:var(--color-text-secondary);min-width:60px}
+  .stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin:12px 0}
+  .stat-box{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:12px;text-align:center}
+  .stat-label{font-size:11px;color:var(--color-text-secondary);margin-bottom:4px}
+  .stat-val{font-size:20px;font-weight:500;color:var(--color-text-primary)}
+  .grid-cell{width:36px;height:36px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:500;border:0.5px solid var(--color-border-tertiary);transition:all .4s}
+  .cell-untested{background:var(--color-background-secondary);color:var(--color-text-secondary)}
+  .cell-testing{background:#FAEEDA;color:#412402;border-color:#EF9F27}
+  .cell-done{background:#E1F5EE;color:#085041;border-color:#5DCAA5}
+  .cell-best{background:#EEEDFE;color:#26215C;border-color:#7F77DD}
+</style>
+
+<h2 class="sr-only">Cross-validation and hyperparameter tuning — interactive learning guide</h2>
+
+<div class="tb-bar">
+  <button class="tb on" onclick="showTab('cv',this)">Cross-validation</button>
+  <button class="tb" onclick="showTab('ht',this)">Hyperparameter tuning</button>
+  <button class="tb" onclick="showTab('ovfit',this)">Overfit vs underfit</button>
+  <button class="tb" onclick="showTab('code',this)">Full code</button>
+  <button class="tb" onclick="showTab('qz',this)">Quiz</button>
+</div>
+
+<!-- ===== CROSS VALIDATION ===== -->
+<div id="cv" class="sec on">
+
+  <div class="card">
+    <h3>The problem cross-validation solves</h3>
+    <p class="sub">Imagine you scored 90% on one exam. Is that reliable? What if it was a lucky paper? What if you practised EXACTLY those questions?</p>
+    <p class="sub">Same problem in ML. If you train on 80% of data and test on the remaining 20%, your result depends heavily on WHICH 20% you picked. One lucky split can make a bad model look great.</p>
+    <div class="why">Cross-validation says: "don't test on just one split — test on ALL possible splits and average the results." That gives you a much more trustworthy score.</div>
+  </div>
+
+  <div class="card">
+    <h3>K-Fold — the main one you will use</h3>
+    <p class="sub">K = number of folds (groups). Use the slider to see how it works:</p>
+
+    <div style="display:flex;align-items:center;gap:12px;margin:10px 0;flex-wrap:wrap">
+      <label style="font-size:13px;color:var(--color-text-secondary);">K (folds)</label>
+      <input type="range" min="2" max="10" step="1" value="5" id="kslider" oninput="drawFolds(+this.value)" style="flex:1;min-width:120px">
+      <span style="font-weight:500;font-size:14px;min-width:20px" id="klabel">5</span>
+    </div>
+
+    <div id="folds-vis"></div>
+
+    <div style="display:flex;gap:16px;margin-top:8px;flex-wrap:wrap">
+      <span style="font-size:12px;display:flex;align-items:center;gap:6px"><span style="width:14px;height:14px;border-radius:2px;background:#E6F1FB;border:0.5px solid #85B7EB;display:inline-block"></span>Training data</span>
+      <span style="font-size:12px;display:flex;align-items:center;gap:6px"><span style="width:14px;height:14px;border-radius:2px;background:#E1F5EE;border:0.5px solid #5DCAA5;display:inline-block"></span>Validation (test) data</span>
+    </div>
+
+    <div id="kfold-summary" style="margin-top:12px"></div>
+  </div>
+
+  <div class="card">
+    <h3>Stratified K-Fold — for imbalanced data</h3>
+    <p class="sub">Regular K-Fold just randomly splits rows. Problem: what if your dataset has 90% class A and 10% class B? By pure bad luck, one fold might end up with NO class B samples at all.</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0">
+      <div style="background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:12px">
+        <div style="font-size:12px;font-weight:500;color:var(--color-text-primary);margin-bottom:8px">Regular K-Fold (risky)</div>
+        <div style="display:flex;gap:3px;margin-bottom:4px">
+          <div style="flex:3;height:20px;background:#E6F1FB;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:10px;color:#0C447C">A A A</div>
+          <div style="flex:1;height:20px;background:#E6F1FB;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:10px;color:#0C447C">B</div>
+        </div>
+        <div style="display:flex;gap:3px;margin-bottom:4px">
+          <div style="flex:4;height:20px;background:#E6F1FB;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:10px;color:#0C447C">A A A A</div>
+          <div style="flex:0;height:20px;background:#FCEBEB;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:10px;color:#501313;min-width:28px">0 B!</div>
+        </div>
+        <div style="font-size:11px;color:#A32D2D;margin-top:4px">Fold 2 has no class B — bad!</div>
+      </div>
+      <div style="background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:12px">
+        <div style="font-size:12px;font-weight:500;color:var(--color-text-primary);margin-bottom:8px">Stratified K-Fold (safe)</div>
+        <div style="display:flex;gap:3px;margin-bottom:4px">
+          <div style="flex:3;height:20px;background:#E1F5EE;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:10px;color:#085041">A A A</div>
+          <div style="flex:1;height:20px;background:#E1F5EE;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:10px;color:#085041">B</div>
+        </div>
+        <div style="display:flex;gap:3px;margin-bottom:4px">
+          <div style="flex:3;height:20px;background:#E1F5EE;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:10px;color:#085041">A A A</div>
+          <div style="flex:1;height:20px;background:#E1F5EE;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:10px;color:#085041">B</div>
+        </div>
+        <div style="font-size:11px;color:#085041;margin-top:4px">Every fold has the same 75% A / 25% B ratio</div>
+      </div>
+    </div>
+    <div class="why">Stratified = "proportional". Each fold mirrors the class distribution of the full dataset. Use this for classification problems always.</div>
+    <div class="code">from sklearn.model_selection import StratifiedKFold
+
+skf = StratifiedKFold(n_splits=5)
+for train_idx, val_idx in skf.split(X, y):
+    X_train, X_val = X[train_idx], X[val_idx]</div>
+  </div>
+
+  <div class="card">
+    <h3>LOOCV — Leave-One-Out Cross-Validation</h3>
+    <p class="sub">Extreme version of K-Fold where K = number of data points. Each time, ONE data point is the test set and all others are training.</p>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin:10px 0">
+      <div style="background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:10px;text-align:center">
+        <div style="font-size:11px;color:var(--color-text-secondary)">Most robust?</div>
+        <div style="font-size:20px;font-weight:500;color:#085041">Yes</div>
+      </div>
+      <div style="background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:10px;text-align:center">
+        <div style="font-size:11px;color:var(--color-text-secondary)">Computationally expensive?</div>
+        <div style="font-size:20px;font-weight:500;color:#A32D2D">Very</div>
+      </div>
+      <div style="background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:10px;text-align:center">
+        <div style="font-size:11px;color:var(--color-text-secondary)">Use when?</div>
+        <div style="font-size:13px;font-weight:500;color:var(--color-text-primary)">Small datasets only</div>
+      </div>
+    </div>
+    <div class="warn">If you have 10,000 rows, LOOCV trains the model 10,000 times. Use K-Fold (K=5 or 10) instead for large datasets.</div>
+  </div>
+
+</div>
+
+<!-- ===== HYPERPARAMETER TUNING ===== -->
+<div id="ht" class="sec">
+
+  <div class="card">
+    <h3>Parameters vs hyperparameters — the key difference</h3>
+    <p class="sub">These two words sound similar but mean very different things:</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0">
+      <div style="background:#E6F1FB;border-radius:var(--border-radius-md);padding:12px">
+        <div style="font-size:12px;font-weight:500;color:#0C447C;margin-bottom:6px">Parameters (learned automatically)</div>
+        <div style="font-size:12px;color:#185FA5">The model learns these from data during training. You never set them manually.</div>
+        <div style="font-size:12px;color:#185FA5;margin-top:6px">Examples: weights in a neural network, coefficients in linear regression</div>
+      </div>
+      <div style="background:#FAEEDA;border-radius:var(--border-radius-md);padding:12px">
+        <div style="font-size:12px;font-weight:500;color:#412402;margin-bottom:6px">Hyperparameters (you set before training)</div>
+        <div style="font-size:12px;color:#633806">These control HOW the model learns. You must choose them yourself.</div>
+        <div style="font-size:12px;color:#633806;margin-top:6px">Examples: max_depth, learning_rate, n_estimators, C, kernel</div>
+      </div>
+    </div>
+    <div class="why">Analogy: training a student for an exam. The student's memory of facts = parameters (learned from studying). How many hours per day to study, which topics to focus on = hyperparameters (you decide before studying begins).</div>
+  </div>
+
+  <div class="card">
+    <h3>Grid Search — tries every combination</h3>
+    <p class="sub">You define a grid of values to try. Grid Search tests every single combination and picks the best one.</p>
+    <div class="code">param_grid = {
+    'max_depth':     [3, 5, 10],
+    'learning_rate': [0.01, 0.1, 0.5]
+}
+# Total combinations: 3 × 3 = 9 runs</div>
+
+    <p class="sub" style="margin-top:10px">Click "Run Grid Search" to see it work through all combinations:</p>
+
+    <div id="grid-vis" style="margin:12px 0"></div>
+
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0;align-items:center">
+      <button onclick="runGridSearch()" style="font-size:13px;padding:8px 14px">Run Grid Search</button>
+      <button onclick="resetGrid()" style="font-size:13px;padding:8px 14px">Reset</button>
+      <span id="grid-status" style="font-size:12px;color:var(--color-text-secondary)"></span>
+    </div>
+
+    <div id="grid-result" style="display:none" class="good"></div>
+    <div class="warn" style="margin-top:8px">Grid Search is thorough but slow. If you have 5 hyperparameters each with 5 values = 5⁵ = 3125 runs. Each run trains a full model. With cross-validation it multiplies: 3125 × 5 folds = 15,625 model trainings!</div>
+  </div>
+
+  <div class="card">
+    <h3>Random Search — smarter for large spaces</h3>
+    <p class="sub">Instead of trying every combination, Random Search samples a fixed number of random combinations from the space.</p>
+    <div class="code">from sklearn.model_selection import RandomizedSearchCV
+
+param_dist = {
+    'max_depth':     [3, 5, 7, 10, 15, 20],
+    'learning_rate': [0.001, 0.01, 0.05, 0.1, 0.3, 0.5]
+}
+# 6×6 = 36 possible combinations
+# Random Search tests only 10 (n_iter=10)
+rs = RandomizedSearchCV(model, param_dist, n_iter=10, cv=5)</div>
+    <div class="why">Research shows that random search finds good hyperparameters nearly as well as grid search — but much faster. The reason: usually only 1-2 hyperparameters really matter. Random sampling covers more of the important ones.</div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0">
+      <div style="background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:12px">
+        <div style="font-size:12px;font-weight:500;color:var(--color-text-primary);margin-bottom:4px">Grid Search</div>
+        <div style="font-size:12px;color:var(--color-text-secondary)">Tests ALL combinations. Guaranteed to find the best in your grid. Slow for large spaces.</div>
+      </div>
+      <div style="background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:12px">
+        <div style="font-size:12px;font-weight:500;color:var(--color-text-primary);margin-bottom:4px">Random Search</div>
+        <div style="font-size:12px;color:var(--color-text-secondary)">Tests N random combinations. Faster. Near-optimal for large hyperparameter spaces.</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ===== OVERFIT VS UNDERFIT ===== -->
+<div id="ovfit" class="sec">
+
+  <div class="card">
+    <h3>Underfitting — model is too simple</h3>
+    <p class="sub">The model hasn't learned enough from the data. It performs badly on both training data AND new data.</p>
+    <div class="danger">Like a student who barely studied. Gets bad marks in both practice tests and the real exam.</div>
+    <div class="code">Signs of underfitting:
+  - Training accuracy: LOW
+  - Validation accuracy: LOW
+  - Both scores are similarly bad
+
+Fix: use a more complex model, add more features,
+     increase max_depth, train for longer</div>
+  </div>
+
+  <div class="card">
+    <h3>Overfitting — model is too complex</h3>
+    <p class="sub">The model memorised the training data including its noise. Performs great on training data but badly on new data.</p>
+    <div class="danger">Like a student who memorised the exact practice questions but can't handle any variation in the real exam.</div>
+    <div class="code">Signs of overfitting:
+  - Training accuracy: HIGH (e.g. 99%)
+  - Validation accuracy: LOW (e.g. 65%)
+  - Big gap between the two scores
+
+Fix: reduce max_depth, add regularisation,
+     get more training data, use cross-validation</div>
+
+    <div style="margin:12px 0">
+      <p class="sub">Drag the slider — watch how model complexity affects train vs validation score:</p>
+      <div style="display:flex;align-items:center;gap:12px;margin:8px 0;flex-wrap:wrap">
+        <label style="font-size:13px;color:var(--color-text-secondary);">Model complexity</label>
+        <input type="range" min="1" max="20" step="1" value="5" id="complexity" oninput="updateFitChart(+this.value)" style="flex:1;min-width:120px">
+        <span style="font-size:13px;color:var(--color-text-secondary)" id="complexlabel">moderate</span>
+      </div>
+      <canvas id="fitCanvas" height="160" style="width:100%"></canvas>
+      <div id="fit-diagnosis" class="why" style="margin-top:8px"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>How cross-validation detects overfitting</h3>
+    <p class="sub">This is the whole point. Without cross-validation you might only check training accuracy and think your model is great. Cross-validation forces the model to prove itself on data it has never seen — every time.</p>
+    <div class="code">from sklearn.model_selection import cross_val_score
+
+scores = cross_val_score(model, X, y, cv=5, scoring='accuracy')
+
+print(scores)          # [0.88, 0.91, 0.87, 0.90, 0.89]  ← each fold's score
+print(scores.mean())   # 0.89  ← reliable average
+print(scores.std())    # 0.014 ← low std = consistent, not overfitting
+
+# If you see training accuracy 0.99 but CV score 0.65 → OVERFITTING</div>
+    <div class="why">Low cross-validation std (standard deviation) = model is consistent across different data slices = trustworthy model. High std = model is sensitive to which data it sees = might be overfitting.</div>
+  </div>
+
+</div>
+
+<!-- ===== FULL CODE ===== -->
+<div id="code" class="sec">
+
+  <div class="card">
+    <h3>Task 1 — feature engineering</h3>
+    <div class="code">import pandas as pd
+import numpy as np
+from sklearn.preprocessing import PolynomialFeatures
+
+df = pd.read_csv("bike_sharing_daily.csv")
+df['dteday'] = pd.to_datetime(df['dteday'])
+
+# Date features (feature creation)
+df['month']       = df['dteday'].dt.month
+df['day_of_week'] = df['dteday'].dt.dayofweek
+df['year']        = df['dteday'].dt.year
+df['is_weekend']  = (df['day_of_week'] >= 5).astype(int)
+
+# Polynomial transformation on temp
+from sklearn.preprocessing import PolynomialFeatures
+poly = PolynomialFeatures(degree=2, include_bias=False)
+temp_poly = poly.fit_transform(df[['temp']])
+df['temp_sq'] = temp_poly[:, 1]   # adds temp² column
+
+print(df[['month','day_of_week','year','is_weekend','temp','temp_sq']].head())</div>
+  </div>
+
+  <div class="card">
+    <h3>Task 2 — train, evaluate with cross-validation</h3>
+    <div class="code">from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import cross_val_score, StratifiedKFold
+from sklearn.metrics import classification_report
+
+# Define features and target
+features = ['temp', 'temp_sq', 'hum', 'windspeed', 'month', 'is_weekend']
+X = df[features]
+y = (df['cnt'] > df['cnt'].median()).astype(int)   # binary: high or low rentals
+
+# K-Fold cross-validation
+cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
+scores = cross_val_score(X=X, y=y, estimator=RandomForestClassifier(),
+                         cv=cv, scoring='f1')
+
+print("F1 per fold:", scores.round(3))
+print("Mean F1:    ", scores.mean().round(3))
+print("Std:        ", scores.std().round(3))
+# Low std = stable model. High std = overfitting on some folds.</div>
+  </div>
+
+  <div class="card">
+    <h3>Task 3 — Grid Search for hyperparameter tuning</h3>
+    <div class="code">from sklearn.model_selection import GridSearchCV
+
+model = RandomForestClassifier(random_state=42)
+
+param_grid = {
+    'n_estimators': [50, 100, 200],     # number of trees
+    'max_depth':    [3, 5, 10, None],   # depth of each tree
+    'min_samples_split': [2, 5, 10]     # min samples to split a node
+}
+# Total: 3 × 4 × 3 = 36 combinations × 5 folds = 180 model trainings
+
+grid_search = GridSearchCV(
+    estimator=model,
+    param_grid=param_grid,
+    cv=5,
+    scoring='f1',
+    n_jobs=-1,        # use all CPU cores
+    verbose=1
+)
+
+grid_search.fit(X, y)
+
+print("Best params:", grid_search.best_params_)
+print("Best F1:    ", grid_search.best_score_.round(3))
+
+# Use the best model for predictions
+best_model = grid_search.best_estimator_
+</div>
+    <div class="why">n_jobs=-1 tells sklearn to use all your CPU cores in parallel. Without it, 180 trainings happens one by one. With it, it runs many simultaneously — much faster.</div>
+  </div>
+
+</div>
+
+<!-- ===== QUIZ ===== -->
+<div id="qz" class="sec">
+  <p class="sub" style="margin-bottom:14px">6 questions — straight from your notes, no tricks.</p>
+  <div id="qs"></div>
+  <button onclick="resetQ()" style="margin-top:14px;font-size:13px;padding:8px 16px;">↺ Reset</button>
+</div>
+
+<script>
+function showTab(id,btn){
+  document.querySelectorAll('.sec').forEach(s=>s.classList.remove('on'));
+  document.querySelectorAll('.tb').forEach(b=>b.classList.remove('on'));
+  document.getElementById(id).classList.add('on');
+  btn.classList.add('on');
+  if(id==='qz') buildQuiz();
+  if(id==='ovfit') setTimeout(()=>updateFitChart(5),50);
+}
+
+function drawFolds(k){
+  document.getElementById('klabel').textContent=k;
+  const c=document.getElementById('folds-vis');
+  c.innerHTML='';
+  for(let i=0;i<k;i++){
+    const row=document.createElement('div');
+    row.className='fold-row';
+    const lbl=document.createElement('span');
+    lbl.className='fold-label';
+    lbl.textContent='Fold '+(i+1);
+    row.appendChild(lbl);
+    for(let j=0;j<k;j++){
+      const cell=document.createElement('div');
+      cell.className='fold-cell '+(j===i?'fold-test':'fold-train');
+      cell.textContent=j===i?'TEST':'train';
+      row.appendChild(cell);
+    }
+    c.appendChild(row);
+  }
+  const sum=document.getElementById('kfold-summary');
+  const trainPct=Math.round((k-1)/k*100);
+  sum.innerHTML=`<div class="stat-grid">
+    <div class="stat-box"><div class="stat-label">Folds</div><div class="stat-val">${k}</div></div>
+    <div class="stat-box"><div class="stat-label">Train size per fold</div><div class="stat-val">${trainPct}%</div></div>
+    <div class="stat-box"><div class="stat-label">Test size per fold</div><div class="stat-val">${100-trainPct}%</div></div>
+    <div class="stat-box"><div class="stat-label">Total model trainings</div><div class="stat-val">${k}</div></div>
+  </div>`;
+}
+drawFolds(5);
+
+const depths=[3,5,10];
+const lrs=[0.01,0.1,0.5];
+let gridState=[];
+let gridTimer=null;
+
+function buildGridVis(){
+  const d=document.getElementById('grid-vis');
+  d.innerHTML='';
+  const wrapper=document.createElement('div');
+  wrapper.style.cssText='overflow-x:auto';
+  const table=document.createElement('div');
+  table.style.cssText='display:inline-block;min-width:max-content';
+
+  const header=document.createElement('div');
+  header.style.cssText='display:flex;gap:4px;margin-bottom:4px;margin-left:80px';
+  lrs.forEach(lr=>{
+    const h=document.createElement('div');
+    h.style.cssText='width:80px;text-align:center;font-size:11px;color:var(--color-text-secondary)';
+    h.textContent='lr='+lr;
+    header.appendChild(h);
+  });
+  table.appendChild(header);
+
+  depths.forEach((d2,di)=>{
+    const row=document.createElement('div');
+    row.style.cssText='display:flex;align-items:center;gap:4px;margin-bottom:4px';
+    const rl=document.createElement('div');
+    rl.style.cssText='width:76px;font-size:11px;color:var(--color-text-secondary);text-align:right;padding-right:4px';
+    rl.textContent='depth='+d2;
+    row.appendChild(rl);
+    lrs.forEach((lr,li)=>{
+      const cell=document.createElement('div');
+      cell.className='grid-cell cell-untested';
+      cell.id='gc-'+di+'-'+li;
+      cell.textContent='—';
+      row.appendChild(cell);
+    });
+    table.appendChild(row);
+  });
+  wrapper.appendChild(table);
+  d.appendChild(wrapper);
+}
+buildGridVis();
+
+function runGridSearch(){
+  resetGrid();
+  const scores=[[0.81,0.87,0.83],[0.85,0.91,0.88],[0.84,0.89,0.86]];
+  let idx=0;
+  const order=[];
+  for(let i=0;i<depths.length;i++) for(let j=0;j<lrs.length;j++) order.push([i,j]);
+
+  document.getElementById('grid-status').textContent='Running...';
+  document.getElementById('grid-result').style.display='none';
+
+  gridTimer=setInterval(()=>{
+    if(idx>0){
+      const [pi,pj]=order[idx-1];
+      const cell=document.getElementById('gc-'+pi+'-'+pj);
+      cell.className='grid-cell cell-done';
+      cell.textContent=scores[pi][pj].toFixed(2);
+    }
+    if(idx<order.length){
+      const [ci,cj]=order[idx];
+      const cell=document.getElementById('gc-'+ci+'-'+cj);
+      cell.className='grid-cell cell-testing';
+      cell.textContent='...';
+      document.getElementById('grid-status').textContent='Testing depth='+depths[ci]+', lr='+lrs[cj]+'...';
+      idx++;
+    } else {
+      clearInterval(gridTimer);
+      let best={score:-1,di:-1,lj:-1};
+      for(let i=0;i<depths.length;i++) for(let j=0;j<lrs.length;j++) if(scores[i][j]>best.score) best={score:scores[i][j],di:i,lj:j};
+      const bc=document.getElementById('gc-'+best.di+'-'+best.lj);
+      bc.className='grid-cell cell-best';
+      document.getElementById('grid-status').textContent='Done! 9 combinations tested.';
+      const res=document.getElementById('grid-result');
+      res.textContent='Best params: max_depth='+depths[best.di]+', learning_rate='+lrs[best.lj]+' — F1 score: '+best.score.toFixed(2);
+      res.style.display='block';
+    }
+  },600);
+}
+
+function resetGrid(){
+  if(gridTimer) clearInterval(gridTimer);
+  buildGridVis();
+  document.getElementById('grid-status').textContent='';
+  document.getElementById('grid-result').style.display='none';
+}
+
+function updateFitChart(v){
+  const labels=['very simple','simple','moderate','complex','very complex'];
+  const li=Math.round((v-1)/19*4);
+  document.getElementById('complexlabel').textContent=labels[li];
+
+  const canvas=document.getElementById('fitCanvas');
+  const ctx=canvas.getContext('2d');
+  const W=canvas.offsetWidth||560, H=160;
+  canvas.width=W; canvas.height=H;
+
+  const isDark=window.matchMedia('(prefers-color-scheme:dark)').matches;
+  const txtColor=isDark?'#c2c0b6':'#444441';
+  const gridColor=isDark?'rgba(255,255,255,0.07)':'rgba(0,0,0,0.07)';
+
+  ctx.clearRect(0,0,W,H);
+  for(let i=0;i<=4;i++){const y=20+i*(H-40)/4;ctx.strokeStyle=gridColor;ctx.lineWidth=0.5;ctx.beginPath();ctx.moveTo(40,y);ctx.lineTo(W-10,y);ctx.stroke();}
+
+  const trainScore=Math.min(0.99, 0.55+v*0.022);
+  const valScore=v<=8 ? 0.50+v*0.04 : 0.82-Math.pow((v-8)*0.06,2);
+  const tY=H-20-(trainScore)*(H-40);
+  const vY=H-20-(Math.max(0.3,valScore))*(H-40);
+
+  const pts=20;
+  ctx.beginPath();ctx.strokeStyle='#185FA5';ctx.lineWidth=2;
+  for(let i=0;i<pts;i++){
+    const x=40+(i/(pts-1))*(W-50);
+    const s=Math.min(0.99,0.55+(i/(pts-1))*v*0.022);
+    const y=H-20-s*(H-40);
+    i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+  }
+  ctx.stroke();
+
+  ctx.beginPath();ctx.strokeStyle='#1D9E75';ctx.lineWidth=2;
+  for(let i=0;i<pts;i++){
+    const x=40+(i/(pts-1))*(W-50);
+    const cv2=i/(pts-1)*v;
+    const s=cv2<=8?0.50+cv2*0.04:0.82-Math.pow((cv2-8)*0.06,2);
+    const y=H-20-Math.max(0.3,s)*(H-40);
+    i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+  }
+  ctx.stroke();
+
+  ctx.fillStyle='#185FA5';ctx.font='11px sans-serif';
+  ctx.fillText('Train: '+trainScore.toFixed(2), W-90, tY-6);
+  ctx.fillStyle='#1D9E75';
+  ctx.fillText('Val: '+Math.max(0.3,valScore).toFixed(2), W-90, vY+14);
+  ctx.fillStyle=txtColor;ctx.font='10px sans-serif';
+  ctx.fillText('Low complexity',42,H-4);ctx.fillText('High complexity',W-100,H-4);
+  ctx.fillText('Score',2,20);
+
+  const el=document.getElementById('fit-diagnosis');
+  const gap=trainScore-Math.max(0.3,valScore);
+  if(v<=4){el.textContent='Underfitting — both train and val scores are low. Model is too simple, not learning the patterns.';el.className='danger'}
+  else if(gap>0.15){el.textContent='Overfitting — train score is high but val score is dropping. Model memorised training data, not generalising.';el.className='warn'}
+  else{el.textContent='Good fit — train and val scores are both high and close together. This is what you want!';el.className='good'}
+}
+
+const qs=[
+  {q:"In 5-Fold Cross-Validation, how many times is the model trained?",opts:["1 time on all data","5 times — each fold takes a turn as the test set","20 times — once per percentage of data","Only 4 times — one fold is always skipped"],ans:1,ex:"K-Fold trains the model K times. Each time, one different fold is the test set and the rest are training. The final score = average of all K scores."},
+  {q:"Your dataset has 1000 rows, 950 of class A and 50 of class B. Which cross-validation should you use?",opts:["Regular K-Fold — it's simpler","LOOCV — it uses every point","Stratified K-Fold — ensures each fold keeps the 95%/5% class ratio","No cross-validation needed for large datasets"],ans:2,ex:"With imbalanced data, regular K-Fold might put all class B examples in one fold and none in others. Stratified K-Fold ensures each fold reflects the same 95/5 split as the original dataset."},
+  {q:"What is the difference between a parameter and a hyperparameter?",opts:["They are the same thing","Parameters are set by you; hyperparameters are learned from data","Hyperparameters are set before training; parameters are learned from data","Hyperparameters are only used in deep learning"],ans:2,ex:"Parameters (like regression coefficients) are learned automatically during training. Hyperparameters (like max_depth or learning_rate) must be set by you BEFORE training starts. That's why we tune them."},
+  {q:"Grid Search with 4 hyperparameters each having 5 values, with 5-fold CV. How many model trainings happen?",opts:["20","100","500","625"],ans:2,ex:"4 hyperparameters × 5 values each = 5⁴ = 625 combinations. Each combination is evaluated with 5-fold CV = 625 × 5 = 3,125 trainings. Grid search is exhaustive!"},
+  {q:"Your model scores 99% on training data but only 62% on cross-validation. What is happening?",opts:["The model is underfitting","The model is perfectly tuned","The model is overfitting — memorised training data","Cross-validation is broken"],ans:2,ex:"A huge gap between training score (99%) and CV score (62%) is the classic sign of overfitting. The model memorised the training data including its noise, but can't generalise to new data."},
+  {q:"When would you use Random Search instead of Grid Search?",opts:["When you have only 2 hyperparameters","When the hyperparameter space is large and exhaustive search would be too slow","When you want guaranteed optimal results","When your dataset is very small"],ans:1,ex:"Random Search shines when you have many hyperparameters or many possible values. It samples N random combinations instead of all combinations — nearly as good as Grid Search but much faster."}
+];
+
+let done={};
+function buildQuiz(){
+  const c=document.getElementById('qs');
+  if(c.children.length)return;
+  qs.forEach((q,qi)=>{
+    const d=document.createElement('div');
+    d.className='card';
+    d.innerHTML=`<p style="font-weight:500;font-size:14px;margin:0 0 10px">Q${qi+1}. ${q.q}</p>
+      ${q.opts.map((o,oi)=>`<button class="qopt" onclick="answer(${qi},${oi})">${o}</button>`).join('')}
+      <div class="fb" id="fb${qi}"></div>`;
+    c.appendChild(d);
+  });
+}
+function answer(qi,oi){
+  if(done[qi]!=null)return;
+  done[qi]=oi;
+  const card=document.querySelectorAll('#qs .card')[qi];
+  const btns=card.querySelectorAll('.qopt');
+  btns[oi].classList.add(oi===qs[qi].ans?'c':'w');
+  if(oi!==qs[qi].ans)btns[qs[qi].ans].classList.add('c');
+  btns.forEach(b=>b.style.pointerEvents='none');
+  const fb=document.getElementById('fb'+qi);
+  fb.textContent=(oi===qs[qi].ans?'✓ Correct! ':'✗ Not quite. ')+qs[qi].ex;
+  fb.className='fb on '+(oi===qs[qi].ans?'c':'w');
+}
+function resetQ(){done={};document.getElementById('qs').innerHTML='';buildQuiz();}
+</script>
