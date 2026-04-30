@@ -1,0 +1,461 @@
+
+<style>
+  .tb-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
+  .tb{padding:8px 16px;border:0.5px solid var(--color-border-tertiary);background:var(--color-background-secondary);border-radius:var(--border-radius-md);cursor:pointer;font-size:13px;color:var(--color-text-secondary);transition:all .2s}
+  .tb.on{background:var(--color-background-primary);color:var(--color-text-primary);border-color:var(--color-border-primary);font-weight:500}
+  .sec{display:none}.sec.on{display:block}
+  .card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1rem 1.25rem;margin-bottom:14px}
+  .card h3{font-size:15px;font-weight:500;margin:0 0 8px}
+  .code{background:var(--color-background-secondary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:12px 14px;font-family:var(--font-mono);font-size:12px;line-height:1.8;overflow-x:auto;color:var(--color-text-primary);margin:10px 0;white-space:pre}
+  .why{background:var(--color-background-info);border-left:3px solid var(--color-border-info);padding:8px 12px;border-radius:0 var(--border-radius-md) var(--border-radius-md) 0;font-size:12px;color:var(--color-text-info);margin:8px 0}
+  .warn{background:var(--color-background-warning);border-left:3px solid var(--color-border-warning);padding:8px 12px;border-radius:0 var(--border-radius-md) var(--border-radius-md) 0;font-size:12px;color:var(--color-text-warning);margin:8px 0}
+  .good{background:var(--color-background-success);border-left:3px solid var(--color-border-success);padding:8px 12px;border-radius:0 var(--border-radius-md) var(--border-radius-md) 0;font-size:12px;color:var(--color-text-success);margin:8px 0}
+  p.sub{font-size:13px;color:var(--color-text-secondary);margin:0 0 8px}
+  .hl{background:var(--color-background-warning);color:var(--color-text-warning);padding:1px 5px;border-radius:3px;font-family:var(--font-mono);font-size:12px}
+  .qopt{width:100%;text-align:left;padding:10px 14px;margin:5px 0;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);background:var(--color-background-secondary);cursor:pointer;font-size:13px;color:var(--color-text-primary);transition:all .15s}
+  .qopt:hover{border-color:var(--color-border-primary);background:var(--color-background-primary)}
+  .qopt.c{border-color:#1D9E75!important;background:#E1F5EE!important;color:#085041!important}
+  .qopt.w{border-color:#E24B4A!important;background:#FCEBEB!important;color:#501313!important}
+  .fb{font-size:12px;padding:8px 12px;border-radius:var(--border-radius-md);margin-top:6px;display:none}
+  .fb.on{display:block}
+  .fb.c{background:#E1F5EE;color:#085041;border:0.5px solid #1D9E75}
+  .fb.w{background:#FCEBEB;color:#501313;border:0.5px solid #E24B4A}
+  .vote-btn{padding:8px 16px;border:0.5px solid var(--color-border-secondary);background:var(--color-background-secondary);border-radius:var(--border-radius-md);cursor:pointer;font-size:13px;color:var(--color-text-primary);transition:all .2s}
+  .vote-btn.sel{border-color:#185FA5;background:#E6F1FB;color:#0C447C;font-weight:500}
+  .tree-node{background:var(--color-background-secondary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:6px 10px;font-size:12px;text-align:center;cursor:pointer;transition:all .2s;color:var(--color-text-primary)}
+  .tree-node.active{background:#E1F5EE;border-color:#1D9E75;color:#085041;font-weight:500}
+  .tree-node.highlight{background:#FAEEDA;border-color:#EF9F27;color:#412402}
+</style>
+
+<h2 class="sr-only">Ensemble learning — interactive guide covering bagging, boosting, random forests, and voting classifiers</h2>
+
+<div class="tb-bar">
+  <button class="tb on" onclick="showTab('intro',this)">What is ensemble learning?</button>
+  <button class="tb" onclick="showTab('types',this)">Bagging vs boosting vs stacking</button>
+  <button class="tb" onclick="showTab('rf',this)">Random forest deep dive</button>
+  <button class="tb" onclick="showTab('code',this)">Code explained</button>
+  <button class="tb" onclick="showTab('qz',this)">Quiz</button>
+</div>
+
+<!-- ===== INTRO ===== -->
+<div id="intro" class="sec on">
+  <div class="card">
+    <h3>The core idea — wisdom of the crowd</h3>
+    <p class="sub">A single model is like asking one person for an answer. That person might be wrong. But if you ask 100 people and take the majority answer — you're much more likely to be right.</p>
+    <p class="sub">That is ensemble learning in one sentence: <strong>combine many models to get a better answer than any single model could give you.</strong></p>
+    <div class="why">Real example: A doctor diagnosing a rare disease. One doctor might miss it. But a panel of 5 specialists, each checking independently, is far less likely to all miss the same thing at the same time.</div>
+  </div>
+
+  <div class="card">
+    <h3>Why does combining models improve performance?</h3>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin:10px 0">
+      <div style="background:#E6F1FB;border-radius:var(--border-radius-md);padding:12px">
+        <div style="font-size:12px;font-weight:500;color:#0C447C;margin-bottom:4px">Reduces variance</div>
+        <div style="font-size:12px;color:#185FA5">One tree might overfit. 100 trees averaged out — the overfitting cancels.</div>
+      </div>
+      <div style="background:#E1F5EE;border-radius:var(--border-radius-md);padding:12px">
+        <div style="font-size:12px;font-weight:500;color:#085041;margin-bottom:4px">Reduces bias</div>
+        <div style="font-size:12px;color:#0F6E56">Boosting corrects errors one by one. Each model fixes what the last one got wrong.</div>
+      </div>
+      <div style="background:#FAEEDA;border-radius:var(--border-radius-md);padding:12px">
+        <div style="font-size:12px;font-weight:500;color:#412402;margin-bottom:4px">Improves robustness</div>
+        <div style="font-size:12px;color:#633806">No single bad model can dominate. The group corrects outlier predictions.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Live voting demo — see how majority vote works</h3>
+    <p class="sub">Three models each predict a class. Click to toggle each model's vote, and watch the ensemble decide:</p>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:10px 0" id="vote-models"></div>
+    <div style="display:flex;align-items:center;gap:12px;margin-top:12px;padding:12px;background:var(--color-background-secondary);border-radius:var(--border-radius-md)">
+      <div style="font-size:13px;color:var(--color-text-secondary)">Ensemble says:</div>
+      <div style="font-size:20px;font-weight:500;color:var(--color-text-primary)" id="ensemble-result">—</div>
+      <div style="font-size:12px;color:var(--color-text-secondary)" id="vote-counts"></div>
+    </div>
+    <div class="why" id="vote-explain" style="margin-top:8px"></div>
+  </div>
+</div>
+
+<!-- ===== TYPES ===== -->
+<div id="types" class="sec">
+
+  <div class="card">
+    <h3>Bagging (Bootstrap Aggregating)</h3>
+    <p class="sub">Each model trains on a different random sample of data (sampled WITH replacement). Then all models predict, and we take a vote (classification) or average (regression).</p>
+    <div style="margin:12px 0">
+      <svg width="100%" viewBox="0 0 640 180" role="img"><title>Bagging diagram — dataset is sampled into 3 subsets, each trains a model, all predict, final prediction taken by majority vote</title>
+        <defs><marker id="arr2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+        <rect x="260" y="8" width="120" height="36" rx="6" fill="#E6F1FB" stroke="#85B7EB" stroke-width="0.5"/>
+        <text font-size="12" font-family="sans-serif" font-weight="500" fill="#0C447C" text-anchor="middle" dominant-baseline="central" x="320" y="26">Full dataset</text>
+        <line x1="270" y1="44" x2="100" y2="80" stroke="#888780" stroke-width="0.5" marker-end="url(#arr2)" fill="none"/>
+        <line x1="320" y1="44" x2="320" y2="80" stroke="#888780" stroke-width="0.5" marker-end="url(#arr2)" fill="none"/>
+        <line x1="370" y1="44" x2="540" y2="80" stroke="#888780" stroke-width="0.5" marker-end="url(#arr2)" fill="none"/>
+        <rect x="30" y="80" width="110" height="32" rx="6" fill="#E1F5EE" stroke="#5DCAA5" stroke-width="0.5"/>
+        <text font-size="11" font-family="sans-serif" fill="#085041" text-anchor="middle" dominant-baseline="central" x="85" y="96">Sample 1</text>
+        <rect x="265" y="80" width="110" height="32" rx="6" fill="#E1F5EE" stroke="#5DCAA5" stroke-width="0.5"/>
+        <text font-size="11" font-family="sans-serif" fill="#085041" text-anchor="middle" dominant-baseline="central" x="320" y="96">Sample 2</text>
+        <rect x="500" y="80" width="110" height="32" rx="6" fill="#E1F5EE" stroke="#5DCAA5" stroke-width="0.5"/>
+        <text font-size="11" font-family="sans-serif" fill="#085041" text-anchor="middle" dominant-baseline="central" x="555" y="96">Sample 3</text>
+        <line x1="85" y1="112" x2="85" y2="136" stroke="#888780" stroke-width="0.5" marker-end="url(#arr2)" fill="none"/>
+        <line x1="320" y1="112" x2="320" y2="136" stroke="#888780" stroke-width="0.5" marker-end="url(#arr2)" fill="none"/>
+        <line x1="555" y1="112" x2="555" y2="136" stroke="#888780" stroke-width="0.5" marker-end="url(#arr2)" fill="none"/>
+        <rect x="30" y="136" width="110" height="32" rx="6" fill="#EEEDFE" stroke="#AFA9EC" stroke-width="0.5"/>
+        <text font-size="11" font-family="sans-serif" fill="#3C3489" text-anchor="middle" dominant-baseline="central" x="85" y="152">Model 1: A</text>
+        <rect x="265" y="136" width="110" height="32" rx="6" fill="#EEEDFE" stroke="#AFA9EC" stroke-width="0.5"/>
+        <text font-size="11" font-family="sans-serif" fill="#3C3489" text-anchor="middle" dominant-baseline="central" x="320" y="152">Model 2: A</text>
+        <rect x="500" y="136" width="110" height="32" rx="6" fill="#EEEDFE" stroke="#AFA9EC" stroke-width="0.5"/>
+        <text font-size="11" font-family="sans-serif" fill="#3C3489" text-anchor="middle" dominant-baseline="central" x="555" y="152">Model 3: B</text>
+        <text font-size="11" font-family="sans-serif" fill="#3C3489" text-anchor="middle" dominant-baseline="central" x="320" y="175">Majority vote → A wins (2 vs 1)</text>
+      </svg>
+    </div>
+    <div class="good">Reduces VARIANCE. Each model sees different data so they overfit differently. Their mistakes cancel out when averaged.</div>
+    <p class="sub" style="margin-top:8px">Key word — "with replacement": the same row can appear multiple times in one sample. This is called bootstrapping.</p>
+  </div>
+
+  <div class="card">
+    <h3>Boosting — models learn from each other's mistakes</h3>
+    <p class="sub">Models are trained ONE AFTER ANOTHER. Each new model pays extra attention to the rows that the previous model got wrong.</p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0;align-items:center">
+      <div style="background:#FCEBEB;border-radius:var(--border-radius-md);padding:10px 14px;font-size:12px;color:#501313;text-align:center;flex:1;min-width:100px">Model 1<br><span style="font-size:11px;color:#A32D2D">misses rows 3,7,12</span></div>
+      <div style="font-size:18px;color:var(--color-text-secondary)">→</div>
+      <div style="background:#FAEEDA;border-radius:var(--border-radius-md);padding:10px 14px;font-size:12px;color:#412402;text-align:center;flex:1;min-width:100px">Model 2<br><span style="font-size:11px;color:#633806">focuses on 3,7,12</span></div>
+      <div style="font-size:18px;color:var(--color-text-secondary)">→</div>
+      <div style="background:#E1F5EE;border-radius:var(--border-radius-md);padding:10px 14px;font-size:12px;color:#085041;text-align:center;flex:1;min-width:100px">Model 3<br><span style="font-size:11px;color:#0F6E56">fixes remaining errors</span></div>
+      <div style="font-size:18px;color:var(--color-text-secondary)">→</div>
+      <div style="background:#EEEDFE;border-radius:var(--border-radius-md);padding:10px 14px;font-size:12px;color:#26215C;text-align:center;flex:1;min-width:100px">Final answer<br><span style="font-size:11px;color:#534AB7">weighted combo</span></div>
+    </div>
+    <div class="good">Reduces BOTH bias and variance. Specifically targets hard-to-predict cases.</div>
+    <div class="warn">Slower than bagging — models can't train in parallel because each depends on the previous one.</div>
+    <p class="sub" style="margin-top:8px">Examples from your notes: AdaBoost, Gradient Boosting, XGBoost, LightGBM. XGBoost is the most popular one in industry and competitions.</p>
+  </div>
+
+  <div class="card">
+    <h3>Stacking — meta-model combines base models</h3>
+    <p class="sub">Train multiple different model types (LogisticRegression, DecisionTree, k-NN). Then train a SECOND model (called a meta-model) that learns: "given what these 3 models predicted, what is the best final answer?"</p>
+    <div style="background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:12px;margin:8px 0">
+      <div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:8px">Level 0 — base models all see the data and predict:</div>
+      <div style="display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap">
+        <div style="background:#E6F1FB;border-radius:4px;padding:6px 10px;font-size:12px;color:#0C447C">LogReg → 0.72</div>
+        <div style="background:#E1F5EE;border-radius:4px;padding:6px 10px;font-size:12px;color:#085041">DecTree → 0.68</div>
+        <div style="background:#FAEEDA;border-radius:4px;padding:6px 10px;font-size:12px;color:#412402">k-NN → 0.75</div>
+      </div>
+      <div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:6px">Level 1 — meta-model sees [0.72, 0.68, 0.75] as inputs and predicts final answer:</div>
+      <div style="background:#EEEDFE;border-radius:4px;padding:6px 10px;font-size:12px;color:#26215C;display:inline-block">Meta-model → 0.79 (better than any base model!)</div>
+    </div>
+    <div class="why">The meta-model learns to trust some base models more than others in different situations. Very powerful but complex to implement correctly.</div>
+  </div>
+
+  <div class="card">
+    <h3>Quick comparison</h3>
+    <div style="overflow-x:auto">
+      <table style="width:100%;border-collapse:collapse;font-size:12px">
+        <tr style="background:var(--color-background-secondary)">
+          <th style="padding:8px;text-align:left;border:0.5px solid var(--color-border-tertiary)">Method</th>
+          <th style="padding:8px;text-align:left;border:0.5px solid var(--color-border-tertiary)">Models train</th>
+          <th style="padding:8px;text-align:left;border:0.5px solid var(--color-border-tertiary)">Reduces</th>
+          <th style="padding:8px;text-align:left;border:0.5px solid var(--color-border-tertiary)">Best for</th>
+        </tr>
+        <tr><td style="padding:8px;border:0.5px solid var(--color-border-tertiary)">Bagging</td><td style="padding:8px;border:0.5px solid var(--color-border-tertiary)">Independently, in parallel</td><td style="padding:8px;border:0.5px solid var(--color-border-tertiary)">Variance</td><td style="padding:8px;border:0.5px solid var(--color-border-tertiary)">High-variance models like decision trees</td></tr>
+        <tr><td style="padding:8px;border:0.5px solid var(--color-border-tertiary)">Boosting</td><td style="padding:8px;border:0.5px solid var(--color-border-tertiary)">Sequentially, one after another</td><td style="padding:8px;border:0.5px solid var(--color-border-tertiary)">Bias + variance</td><td style="padding:8px;border:0.5px solid var(--color-border-tertiary)">Competitions, structured/tabular data</td></tr>
+        <tr><td style="padding:8px;border:0.5px solid var(--color-border-tertiary)">Stacking</td><td style="padding:8px;border:0.5px solid var(--color-border-tertiary)">Independently, then a meta-model</td><td style="padding:8px;border:0.5px solid var(--color-border-tertiary)">Both</td><td style="padding:8px;border:0.5px solid var(--color-border-tertiary)">Max accuracy when you have diverse models</td></tr>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<!-- ===== RANDOM FOREST ===== -->
+<div id="rf" class="sec">
+
+  <div class="card">
+    <h3>Random forest = bagging + feature randomness</h3>
+    <p class="sub">A decision tree is a good model but overfits easily — it memorises the training data. Random Forest fixes this by:</p>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin:10px 0">
+      <div style="background:#E6F1FB;border-radius:var(--border-radius-md);padding:12px">
+        <div style="font-size:12px;font-weight:500;color:#0C447C;margin-bottom:4px">Bootstrap sampling</div>
+        <div style="font-size:12px;color:#185FA5">Each tree trains on a different random subset of rows (with replacement).</div>
+      </div>
+      <div style="background:#E1F5EE;border-radius:var(--border-radius-md);padding:12px">
+        <div style="font-size:12px;font-weight:500;color:#085041;margin-bottom:4px">Feature randomness</div>
+        <div style="font-size:12px;color:#0F6E56">Each split only considers a random subset of features (not all features). This makes trees less correlated with each other.</div>
+      </div>
+      <div style="background:#FAEEDA;border-radius:var(--border-radius-md);padding:12px">
+        <div style="font-size:12px;font-weight:500;color:#412402;margin-bottom:4px">Prediction aggregation</div>
+        <div style="font-size:12px;color:#633806">Classification: majority vote. Regression: average of all trees.</div>
+      </div>
+    </div>
+    <div class="why">Feature randomness is what makes Random Forest special compared to plain bagging. If one feature is very dominant, every tree in plain bagging would use it first — they'd all be correlated and similar. By restricting features per split, trees become diverse, and diverse trees make better ensembles.</div>
+  </div>
+
+  <div class="card">
+    <h3>Key parameters — what each one does</h3>
+    <p class="sub">Click a parameter to see its effect:</p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0" id="param-btns">
+      <button class="vote-btn sel" onclick="showParam('n_estimators',this)">n_estimators</button>
+      <button class="vote-btn" onclick="showParam('max_depth',this)">max_depth</button>
+      <button class="vote-btn" onclick="showParam('max_features',this)">max_features</button>
+      <button class="vote-btn" onclick="showParam('min_samples_leaf',this)">min_samples_leaf</button>
+    </div>
+    <div id="param-detail"></div>
+  </div>
+
+  <div class="card">
+    <h3>Random forest interactive: see how n_estimators affects accuracy</h3>
+    <p class="sub">Drag to add more trees. Watch how accuracy stabilises:</p>
+    <div style="display:flex;align-items:center;gap:12px;margin:8px 0;flex-wrap:wrap">
+      <label style="font-size:13px;color:var(--color-text-secondary)">n_estimators</label>
+      <input type="range" min="1" max="200" step="1" value="10" id="trees-slider" oninput="updateTrees(+this.value)" style="flex:1;min-width:120px">
+      <span style="font-weight:500;font-size:14px;min-width:36px" id="trees-label">10</span>
+    </div>
+    <canvas id="treeCanvas" height="160" style="width:100%"></canvas>
+    <div id="trees-note" class="why" style="margin-top:8px"></div>
+  </div>
+
+</div>
+
+<!-- ===== CODE ===== -->
+<div id="code" class="sec">
+
+  <div class="card">
+    <h3>Voting classifier code — every line explained</h3>
+    <div class="code">from sklearn.datasets import load_iris
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import LogisticRegression
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.ensemble import VotingClassifier
+from sklearn.metrics import accuracy_score</div>
+    <div class="why">StandardScaler is imported here because k-NN and Logistic Regression are sensitive to feature scale. DecisionTree is NOT scale-sensitive but scaling it doesn't hurt.</div>
+
+    <div class="code">X_train = scaler.fit_transform(X_train)
+X_test  = scaler.transform(X_test)
+# fit_transform on train: learn mean & std from training data, apply it
+# transform on test: apply SAME mean & std — do NOT fit again on test data</div>
+    <div class="warn">This is the most common mistake beginners make. If you call fit_transform on test data, the scaler learns different statistics — the test set is no longer comparable to train. Always: fit on train, transform both.</div>
+
+    <div class="code">log_model.fit(X_train, y_train)
+dt_model.fit(X_train, y_train)
+knn_model.fit(X_train, y_train)
+# Each model trains independently on the same training data</div>
+
+    <div class="code">ensemble_model = VotingClassifier(
+    estimators=[
+        ('log_reg',       log_model),
+        ('decision_tree', dt_model),
+        ('knn',           knn_model)
+    ],
+    voting='hard'   # ← 'hard' means majority vote on predicted CLASS LABELS
+                    # ← 'soft' would average predicted PROBABILITIES (often better)
+)</div>
+    <div class="why">voting='hard' — each model votes for a class (e.g. 0 or 1 or 2), majority wins. voting='soft' — each model outputs probabilities (e.g. [0.2, 0.7, 0.1]), these are averaged, highest average wins. Soft voting is usually more accurate when models output well-calibrated probabilities.</div>
+
+    <div class="code">ensemble_model.fit(X_train, y_train)
+# Note: VotingClassifier re-trains all base models internally.
+# So you don't actually need to train them separately above.
+# The individual training above was just done to get individual accuracy scores.</div>
+  </div>
+
+  <div class="card">
+    <h3>Random forest code — every line explained</h3>
+    <div class="code">rf_model = RandomForestClassifier(random_state=42)
+rf_model.fit(X_train, y_train)
+y_pred = rf_model.predict(X_test)</div>
+    <div class="why">random_state=42 makes results reproducible. Without it, random forest picks different random subsets each run and gives slightly different results every time.</div>
+
+    <div class="code">param_grid = {
+    'n_estimators': [50, 100, 200],        # 3 options
+    'max_depth':    [None, 10, 20],         # 3 options (None = unlimited)
+    'max_features': ['sqrt', 'log2', 'None'] # 3 options
+}
+# WARNING: 'None' in max_features is a STRING here — this is actually wrong!
+# It should be None (Python None, not the string 'None')
+# Correct: 'max_features': ['sqrt', 'log2', None]</div>
+    <div class="warn">There is a bug in the original code: <span class="hl">'None'</span> (with quotes) is a string, not Python's <span class="hl">None</span> value. sklearn's max_features does not accept the string 'None'. Remove the quotes: use <span class="hl">None</span> directly.</div>
+
+    <div class="code">grid_search = GridSearchCV(
+    estimator=RandomForestClassifier(random_state=42),
+    param_grid=param_grid,
+    cv=5,           # 5-fold cross-validation for each combination
+    scoring='accuracy',
+    n_jobs=-1       # use all CPU cores — faster
+)
+grid_search.fit(X_train, y_train)
+# Total fits: 3×3×3 = 27 combinations × 5 folds = 135 model trainings!
+
+print(grid_search.best_params_)   # best hyperparameter combo found
+print(grid_search.best_score_)    # best CV accuracy achieved</div>
+  </div>
+
+</div>
+
+<!-- ===== QUIZ ===== -->
+<div id="qz" class="sec">
+  <p class="sub" style="margin-bottom:14px">6 questions — directly from your notes and code.</p>
+  <div id="qs"></div>
+  <button onclick="resetQ()" style="margin-top:14px;font-size:13px;padding:8px 16px">↺ Reset</button>
+</div>
+
+<script>
+function showTab(id,btn){
+  document.querySelectorAll('.sec').forEach(s=>s.classList.remove('on'));
+  document.querySelectorAll('.tb').forEach(b=>b.classList.remove('on'));
+  document.getElementById(id).classList.add('on');
+  btn.classList.add('on');
+  if(id==='intro') buildVoting();
+  if(id==='rf'){showParam('n_estimators',document.querySelector('#param-btns button'));setTimeout(()=>updateTrees(10),50);}
+  if(id==='qz') buildQuiz();
+}
+
+const modelVotes=['A','A','B'];
+const modelNames=['Logistic Regression','Decision Tree','k-NN'];
+function buildVoting(){
+  const c=document.getElementById('vote-models');
+  if(c.innerHTML) return;
+  modelNames.forEach((n,i)=>{
+    const col=document.createElement('div');
+    col.style.cssText='display:flex;flex-direction:column;gap:6px;align-items:center';
+    col.innerHTML=`<div style="font-size:12px;color:var(--color-text-secondary);text-align:center">${n}</div>
+    <div style="display:flex;gap:4px">
+      <button class="vote-btn ${modelVotes[i]==='A'?'sel':''}" onclick="castVote(${i},'A',this)">Class A</button>
+      <button class="vote-btn ${modelVotes[i]==='B'?'sel':''}" onclick="castVote(${i},'B',this)">Class B</button>
+    </div>`;
+    c.appendChild(col);
+  });
+  updateEnsemble();
+}
+function castVote(i,v,btn){
+  modelVotes[i]=v;
+  const parent=btn.closest('div');
+  parent.querySelectorAll('.vote-btn').forEach(b=>b.classList.remove('sel'));
+  btn.classList.add('sel');
+  updateEnsemble();
+}
+function updateEnsemble(){
+  const a=modelVotes.filter(v=>v==='A').length;
+  const b=modelVotes.filter(v=>v==='B').length;
+  const winner=a>b?'Class A':b>a?'Class B':'Tie!';
+  document.getElementById('ensemble-result').textContent=winner;
+  document.getElementById('vote-counts').textContent=`(A: ${a} votes, B: ${b} votes)`;
+  const el=document.getElementById('vote-explain');
+  if(a===b){el.textContent='Tie! In practice this is broken by the first model, or by using soft voting (probabilities) instead of hard voting.';el.className='warn why'}
+  else{el.textContent=`${winner} wins with ${Math.max(a,b)} out of 3 votes. Hard voting = simple majority. Even if one model is wrong, the other two correct models overrule it.`;el.className='why'}
+}
+
+const params={
+  n_estimators:{title:'n_estimators — number of trees',body:`The number of decision trees in the forest. More trees = more robust predictions.`,code:`RandomForestClassifier(n_estimators=100)  # default is 100
+# 10 trees: fast but unstable — results vary between runs
+# 100 trees: good balance of speed and stability
+# 500 trees: very stable, but slower, diminishing returns after ~200`,tip:'Too few trees = high variance (results change each run). Too many = wasteful computation. 100–300 is usually the sweet spot. You can detect the right number by plotting accuracy vs n_estimators — accuracy flattens after a point.'},
+  max_depth:{title:'max_depth — how deep each tree can grow',body:`Controls how many levels of splits each decision tree can make. Shallow = simple tree. Deep = complex tree.`,code:`RandomForestClassifier(max_depth=None)  # None = unlimited depth (default)
+RandomForestClassifier(max_depth=5)     # tree can split max 5 times
+RandomForestClassifier(max_depth=10)    # medium depth`,tip:'max_depth=None can cause individual trees to overfit. But in a forest, this is OK because diversity reduces the damage. Still, setting max_depth=10-20 is good practice for very large datasets.'},
+  max_features:{title:'max_features — features considered per split',body:`At each node split, instead of checking ALL features, the tree only considers a random subset.`,code:`RandomForestClassifier(max_features='sqrt')   # √(total features) — default for classification
+RandomForestClassifier(max_features='log2')   # log2(total features)
+RandomForestClassifier(max_features=None)     # all features (no randomness — not recommended)`,tip:`This is what makes Random Forest "random". If you use all features (None), every tree would make the same splits on the dominant features — they'd all be correlated. sqrt forces diversity between trees, which is exactly what we want.`},
+  min_samples_leaf:{title:'min_samples_leaf — minimum samples in a leaf',body:`A leaf node is a terminal node (end of a branch). This parameter sets the minimum number of samples that must end up in a leaf.`,code:`RandomForestClassifier(min_samples_leaf=1)   # default — allow leaves with 1 sample
+RandomForestClassifier(min_samples_leaf=5)   # leaf must have at least 5 samples
+RandomForestClassifier(min_samples_leaf=10)  # more regularisation`,tip:'min_samples_leaf=1 means trees can grow very specific branches for just 1 data point — memorising noise. Increasing this forces the tree to make more general rules. Like saying "only draw a conclusion if at least 5 examples support it".'}
+};
+
+function showParam(key,btn){
+  document.querySelectorAll('#param-btns .vote-btn').forEach(b=>b.classList.remove('sel'));
+  if(btn) btn.classList.add('sel');
+  const p=params[key];
+  document.getElementById('param-detail').innerHTML=`
+    <div style="margin-top:10px">
+      <div style="font-size:14px;font-weight:500;margin-bottom:6px;color:var(--color-text-primary)">${p.title}</div>
+      <p class="sub">${p.body}</p>
+      <div class="code">${p.code}</div>
+      <div class="why">${p.tip}</div>
+    </div>`;
+}
+
+function updateTrees(n){
+  document.getElementById('trees-label').textContent=n;
+  const canvas=document.getElementById('treeCanvas');
+  if(!canvas) return;
+  const ctx=canvas.getContext('2d');
+  const W=canvas.offsetWidth||560,H=160;
+  canvas.width=W;canvas.height=H;
+  const isDark=window.matchMedia('(prefers-color-scheme:dark)').matches;
+  const txtColor=isDark?'#c2c0b6':'#444441';
+  const gridColor=isDark?'rgba(255,255,255,0.07)':'rgba(0,0,0,0.07)';
+
+  ctx.clearRect(0,0,W,H);
+  for(let i=0;i<=4;i++){const y=20+i*(H-40)/4;ctx.strokeStyle=gridColor;ctx.lineWidth=0.5;ctx.beginPath();ctx.moveTo(40,y);ctx.lineTo(W-10,y);ctx.stroke();}
+
+  const seeded=(s)=>{let x=s;return()=>{x=((x*1664525)+1013904223)&0xffffffff;return(x>>>0)/4294967295;}};
+  const rand=seeded(42);
+  const baseAcc=0.88;
+  const pts=[];
+  for(let t=1;t<=200;t++){
+    const noise=(rand()-0.5)*0.06*Math.exp(-t/30);
+    const acc=Math.min(0.99,baseAcc+(1-Math.exp(-t/40))*0.09+noise);
+    pts.push(acc);
+  }
+
+  ctx.beginPath();ctx.strokeStyle='#185FA5';ctx.lineWidth=2;
+  for(let i=0;i<200;i++){
+    const x=40+(i/199)*(W-50);
+    const y=H-20-pts[i]*(H-40);
+    i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+  }
+  ctx.stroke();
+
+  const curX=40+((n-1)/199)*(W-50);
+  const curY=H-20-pts[n-1]*(H-40);
+  ctx.beginPath();ctx.arc(curX,curY,5,0,Math.PI*2);
+  ctx.fillStyle='#185FA5';ctx.fill();
+
+  ctx.fillStyle=txtColor;ctx.font='11px sans-serif';
+  ctx.fillText('Accuracy',2,18);
+  ctx.fillText('n_estimators →',W-100,H-4);
+  ctx.fillStyle='#185FA5';
+  ctx.fillText(`n=${n}: ${(pts[n-1]*100).toFixed(1)}%`,curX>W-80?curX-70:curX+8,curY-8);
+
+  const note=document.getElementById('trees-note');
+  if(n<20){note.textContent='Too few trees — accuracy is still rising fast and results would be unstable between runs.';note.className='warn why'}
+  else if(n<80){note.textContent='Accuracy is still improving meaningfully. Keep adding trees.';note.className='why'}
+  else{note.textContent='Accuracy has stabilised — you have diminishing returns now. Adding more trees costs computation but barely improves accuracy.';note.className='good'}
+}
+
+const qs=[
+  {q:"What is the main difference between bagging and boosting?",opts:["Bagging uses decision trees; boosting uses neural networks","Bagging trains models in parallel on random subsets; boosting trains them sequentially, each fixing previous errors","Bagging reduces bias; boosting reduces variance","They are the same but with different names"],ans:1,ex:"Bagging = parallel, independent models on random data subsets. Boosting = sequential, each model focuses on correcting errors of the previous one. Key difference: bagging reduces variance, boosting reduces both bias and variance."},
+  {q:"In the code, voting='hard' is used. What does this mean?",opts:["The models are hard to train","Each model votes with its predicted class label — majority class wins","Each model outputs a probability and probabilities are averaged","Hard voting is only for regression tasks"],ans:1,ex:"Hard voting: each model predicts a class label (e.g. class 0, 1, or 2). Whichever class gets the most votes wins. Soft voting averages probabilities and is usually more accurate when models give well-calibrated probability estimates."},
+  {q:"Why does Random Forest use feature randomness (max_features='sqrt') at each split?",opts:["To speed up training by ignoring features","To ensure each tree only uses the best features","To make trees less correlated with each other — diverse trees make better ensembles","To prevent the dataset from running out of features"],ans:2,ex:"Without feature randomness, all trees would use the most dominant feature at every first split — they'd all look similar. sqrt forces each tree to consider a random subset of features, creating diverse trees. Diverse trees make better ensembles because their errors are less correlated."},
+  {q:"There is a bug in the param_grid in the Random Forest code. What is it?",opts:["n_estimators should not include 200","max_depth should not be None","'None' in max_features is a string — it should be None (Python's None, no quotes)","GridSearchCV does not support max_features"],ans:2,ex:"In Python, None (without quotes) is a special null value. 'None' (with quotes) is just a string. sklearn's max_features parameter expects Python's actual None value, not the string 'None'. Always use None without quotes."},
+  {q:"What does fit_transform on X_train and transform on X_test mean for StandardScaler?",opts:["fit_transform is slower, so use transform for test","fit_transform learns mean/std from training data and applies it. transform applies those SAME statistics to test — we never fit on test data","They both do the same thing, just different function names","transform is used when the scaler is already fitted from a previous session"],ans:1,ex:"fit_transform on train: the scaler LEARNS the mean and standard deviation from training data, then applies them. transform on test: applies the SAME mean/std learned from training data. If you fit_transform on test data, the scaler learns test statistics — and now train and test are on completely different scales, ruining the comparison."},
+  {q:"In ensemble voting: LogReg predicts Class A, DecTree predicts Class B, k-NN predicts Class A. What does the ensemble predict with hard voting?",opts:["Class B — it is more uncertain","Class A — it gets 2 votes vs 1 for B","It cannot decide — a tie","It uses soft voting to break the tie"],ans:1,ex:"Hard voting counts the votes: Class A gets 2 votes (LogReg + k-NN), Class B gets 1 vote (DecTree). Majority wins — Class A is the final prediction. This is the whole point of voting ensembles — one wrong model can't override two correct ones."}
+];
+
+let done={};
+function buildQuiz(){
+  const c=document.getElementById('qs');
+  if(c.children.length)return;
+  qs.forEach((q,qi)=>{
+    const d=document.createElement('div');
+    d.className='card';
+    d.innerHTML=`<p style="font-weight:500;font-size:14px;margin:0 0 10px">Q${qi+1}. ${q.q}</p>
+      ${q.opts.map((o,oi)=>`<button class="qopt" onclick="answer(${qi},${oi})">${o}</button>`).join('')}
+      <div class="fb" id="fb${qi}"></div>`;
+    c.appendChild(d);
+  });
+}
+function answer(qi,oi){
+  if(done[qi]!=null)return;
+  done[qi]=oi;
+  const card=document.querySelectorAll('#qs .card')[qi];
+  const btns=card.querySelectorAll('.qopt');
+  btns[oi].classList.add(oi===qs[qi].ans?'c':'w');
+  if(oi!==qs[qi].ans)btns[qs[qi].ans].classList.add('c');
+  btns.forEach(b=>b.style.pointerEvents='none');
+  const fb=document.getElementById('fb'+qi);
+  fb.textContent=(oi===qs[qi].ans?'✓ Correct! ':'✗ Not quite. ')+qs[qi].ex;
+  fb.className='fb on '+(oi===qs[qi].ans?'c':'w');
+}
+function resetQ(){done={};document.getElementById('qs').innerHTML='';buildQuiz();}
+
+buildVoting();
+</script>
