@@ -1,0 +1,542 @@
+
+<style>
+  .tb-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
+  .tb{padding:8px 16px;border:0.5px solid var(--color-border-tertiary);background:var(--color-background-secondary);border-radius:var(--border-radius-md);cursor:pointer;font-size:13px;color:var(--color-text-secondary);transition:all .2s}
+  .tb.on{background:var(--color-background-primary);color:var(--color-text-primary);border-color:var(--color-border-primary);font-weight:500}
+  .sec{display:none}.sec.on{display:block}
+  .card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1rem 1.25rem;margin-bottom:14px}
+  .card h3{font-size:15px;font-weight:500;margin:0 0 8px}
+  .code{background:var(--color-background-secondary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:12px 14px;font-family:var(--font-mono);font-size:12px;line-height:1.8;overflow-x:auto;color:var(--color-text-primary);margin:10px 0;white-space:pre}
+  .why{background:var(--color-background-info);border-left:3px solid var(--color-border-info);padding:8px 12px;border-radius:0 var(--border-radius-md) var(--border-radius-md) 0;font-size:12px;color:var(--color-text-info);margin:8px 0}
+  .warn{background:var(--color-background-warning);border-left:3px solid var(--color-border-warning);padding:8px 12px;border-radius:0 var(--border-radius-md) var(--border-radius-md) 0;font-size:12px;color:var(--color-text-warning);margin:8px 0}
+  .good{background:var(--color-background-success);border-left:3px solid var(--color-border-success);padding:8px 12px;border-radius:0 var(--border-radius-md) var(--border-radius-md) 0;font-size:12px;color:var(--color-text-success);margin:8px 0}
+  p.sub{font-size:13px;color:var(--color-text-secondary);margin:0 0 8px}
+  .hl{background:var(--color-background-warning);color:var(--color-text-warning);padding:1px 5px;border-radius:3px;font-family:var(--font-mono);font-size:12px}
+  .qopt{width:100%;text-align:left;padding:10px 14px;margin:5px 0;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);background:var(--color-background-secondary);cursor:pointer;font-size:13px;color:var(--color-text-primary);transition:all .15s}
+  .qopt:hover{border-color:var(--color-border-primary);background:var(--color-background-primary)}
+  .qopt.c{border-color:#1D9E75!important;background:#E1F5EE!important;color:#085041!important}
+  .qopt.w{border-color:#E24B4A!important;background:#FCEBEB!important;color:#501313!important}
+  .fb{font-size:12px;padding:8px 12px;border-radius:var(--border-radius-md);margin-top:6px;display:none}
+  .fb.on{display:block}
+  .fb.c{background:#E1F5EE;color:#085041;border:0.5px solid #1D9E75}
+  .fb.w{background:#FCEBEB;color:#501313;border:0.5px solid #E24B4A}
+  .step-pill{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;font-size:11px;font-weight:500;margin-right:6px}
+  .step-active{background:#185FA5;color:#fff}
+  .step-done{background:#1D9E75;color:#fff}
+  .step-todo{background:var(--color-background-secondary);color:var(--color-text-secondary);border:0.5px solid var(--color-border-tertiary)}
+  .slider-row{display:flex;align-items:center;gap:12px;margin:8px 0;flex-wrap:wrap}
+  .sval{font-size:14px;font-weight:500;min-width:42px}
+</style>
+
+<h2 class="sr-only">Boosting and gradient boosting — interactive guide with step-by-step visualiser and parameter playground</h2>
+
+<div class="tb-bar">
+  <button class="tb on" onclick="showTab('boost',this)">Boosting concept</button>
+  <button class="tb" onclick="showTab('gb',this)">How gradient boosting works</button>
+  <button class="tb" onclick="showTab('params',this)">Key parameters</button>
+  <button class="tb" onclick="showTab('code',this)">Code + comparison</button>
+  <button class="tb" onclick="showTab('qz',this)">Quiz</button>
+</div>
+
+<!-- ===== BOOSTING CONCEPT ===== -->
+<div id="boost" class="sec on">
+
+  <div class="card">
+    <h3>What is a weak learner?</h3>
+    <p class="sub">Before understanding boosting, you need to understand what a "weak learner" is.</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0">
+      <div style="background:#FCEBEB;border-radius:var(--border-radius-md);padding:12px">
+        <div style="font-size:12px;font-weight:500;color:#501313;margin-bottom:4px">Weak learner</div>
+        <div style="font-size:12px;color:#A32D2D">A model that is only slightly better than random guessing. Usually a very shallow decision tree (depth=1, called a "stump").</div>
+        <div style="font-size:12px;color:#A32D2D;margin-top:4px">Accuracy: ~55–65%</div>
+      </div>
+      <div style="background:#E1F5EE;border-radius:var(--border-radius-md);padding:12px">
+        <div style="font-size:12px;font-weight:500;color:#085041;margin-bottom:4px">Strong learner</div>
+        <div style="font-size:12px;color:#0F6E56">A model with high accuracy. What we want to end up with.</div>
+        <div style="font-size:12px;color:#0F6E56;margin-top:4px">Accuracy: ~90–95%</div>
+      </div>
+    </div>
+    <div class="why">Boosting's magic: combine many weak learners (each barely better than guessing) and they collectively form a strong learner. Like assembling a team of average students who each know different things — together they cover everything.</div>
+  </div>
+
+  <div class="card">
+    <h3>How boosting works — the key intuition</h3>
+    <p class="sub">Each model gets trained, then the NEXT model focuses more on the rows the current model got wrong.</p>
+
+    <div id="boost-steps"></div>
+    <div style="display:flex;gap:8px;margin-top:12px">
+      <button onclick="prevBoostStep()" style="font-size:13px;padding:8px 14px">← Previous</button>
+      <button onclick="nextBoostStep()" style="font-size:13px;padding:8px 14px">Next →</button>
+      <span id="boost-step-label" style="font-size:13px;color:var(--color-text-secondary);align-self:center"></span>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Bagging vs boosting — your table from the screenshot</h3>
+    <div style="overflow-x:auto">
+      <table style="width:100%;border-collapse:collapse;font-size:13px">
+        <tr style="background:var(--color-background-secondary)">
+          <th style="padding:10px;text-align:left;border:0.5px solid var(--color-border-tertiary);font-weight:500">Feature</th>
+          <th style="padding:10px;text-align:left;border:0.5px solid var(--color-border-tertiary);font-weight:500">Bagging</th>
+          <th style="padding:10px;text-align:left;border:0.5px solid var(--color-border-tertiary);font-weight:500">Boosting</th>
+        </tr>
+        <tr>
+          <td style="padding:10px;border:0.5px solid var(--color-border-tertiary);font-weight:500">Approach</td>
+          <td style="padding:10px;border:0.5px solid var(--color-border-tertiary)">Trains models independently on bootstrapped subsets</td>
+          <td style="padding:10px;border:0.5px solid var(--color-border-tertiary)">Trains models sequentially to correct errors</td>
+        </tr>
+        <tr style="background:var(--color-background-secondary)">
+          <td style="padding:10px;border:0.5px solid var(--color-border-tertiary);font-weight:500">Purpose</td>
+          <td style="padding:10px;border:0.5px solid var(--color-border-tertiary)">Reduces variance by averaging predictions</td>
+          <td style="padding:10px;border:0.5px solid var(--color-border-tertiary)">Reduces bias by focusing on difficult cases</td>
+        </tr>
+        <tr>
+          <td style="padding:10px;border:0.5px solid var(--color-border-tertiary);font-weight:500">Training</td>
+          <td style="padding:10px;border:0.5px solid var(--color-border-tertiary)">Parallel — all models train at the same time</td>
+          <td style="padding:10px;border:0.5px solid var(--color-border-tertiary)">Sequential — each model waits for the previous one</td>
+        </tr>
+        <tr style="background:var(--color-background-secondary)">
+          <td style="padding:10px;border:0.5px solid var(--color-border-tertiary);font-weight:500">Examples</td>
+          <td style="padding:10px;border:0.5px solid var(--color-border-tertiary)">Random Forest</td>
+          <td style="padding:10px;border:0.5px solid var(--color-border-tertiary)">AdaBoost, Gradient Boosting, XGBoost, LightGBM</td>
+        </tr>
+        <tr>
+          <td style="padding:10px;border:0.5px solid var(--color-border-tertiary);font-weight:500">Reduces</td>
+          <td style="padding:10px;border:0.5px solid var(--color-border-tertiary)">Variance only</td>
+          <td style="padding:10px;border:0.5px solid var(--color-border-tertiary)">Both bias AND variance</td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<!-- ===== GRADIENT BOOSTING ===== -->
+<div id="gb" class="sec">
+
+  <div class="card">
+    <h3>The 5-step loop — how gradient boosting builds itself</h3>
+    <p class="sub">Gradient Boosting repeats these 5 steps over and over. Each loop adds one more weak learner to the model.</p>
+
+    <div style="position:relative;margin:12px 0" id="gb-stepper"></div>
+    <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
+      <button onclick="prevGB()" style="font-size:13px;padding:8px 14px">← Previous</button>
+      <button onclick="nextGB()" style="font-size:13px;padding:8px 14px">Next →</button>
+      <span id="gb-label" style="font-size:13px;color:var(--color-text-secondary);align-self:center"></span>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Numerical example — let's trace through it manually</h3>
+    <p class="sub">Predicting bike rentals. 4 rows. Starting with mean prediction.</p>
+    <div class="code">Actual values:  [100, 200, 150, 300]
+Mean:           (100+200+150+300)/4 = 187.5
+
+Step 0 — Initial prediction = mean for all rows:
+  Predictions:  [187.5, 187.5, 187.5, 187.5]
+
+Step 1 — Compute residuals (actual - predicted):
+  Residuals:    [100-187.5, 200-187.5, 150-187.5, 300-187.5]
+              = [-87.5,     +12.5,     -37.5,     +112.5]
+
+Step 2 — Train a weak learner to predict these residuals
+  Weak learner predictions: [-80, +15, -35, +110]  (approximate)
+
+Step 3 — Update: new_prediction = old_prediction + lr × weak_learner
+  With learning_rate = 0.1:
+  New predictions: [187.5 + 0.1×(-80), 187.5 + 0.1×(+15), ...]
+                 = [179.5, 189.0, 184.0, 198.5]
+
+Step 4 — New residuals are SMALLER than before → model is improving!
+  New residuals: [-79.5, +11.0, -34.0, +101.5]  (smaller than before)</div>
+    <div class="why">This loop repeats n_estimators times. Each iteration, the residuals get smaller. The model gets better and better by always correcting what's left over from the previous step.</div>
+  </div>
+
+  <div class="card">
+    <h3>What does "gradient" mean in gradient boosting?</h3>
+    <p class="sub">Don't let the word scare you. The "gradient" just means we use calculus to figure out the direction of the error.</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:8px 0">
+      <div style="background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:12px">
+        <div style="font-size:12px;font-weight:500;color:var(--color-text-primary);margin-bottom:4px">For regression (MSE loss)</div>
+        <div style="font-size:12px;color:var(--color-text-secondary)">The gradient = the residuals (actual − predicted). So fitting residuals IS gradient descent.</div>
+      </div>
+      <div style="background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:12px">
+        <div style="font-size:12px;font-weight:500;color:var(--color-text-primary);margin-bottom:4px">For other loss functions</div>
+        <div style="font-size:12px;color:var(--color-text-secondary)">The gradient is a more general measure of error. This is why it works for classification too, not just regression.</div>
+      </div>
+    </div>
+    <div class="why">At your level: just remember — gradient boosting = iteratively fit residuals using gradient descent. Each weak learner learns "what did the ensemble get wrong so far?"</div>
+  </div>
+
+</div>
+
+<!-- ===== PARAMS ===== -->
+<div id="params" class="sec">
+
+  <div class="card">
+    <h3>Interactive parameter playground</h3>
+    <p class="sub">Drag all three sliders and watch how they interact on the simulated accuracy curve:</p>
+
+    <div class="slider-row">
+      <label style="font-size:13px;color:var(--color-text-secondary);min-width:130px">learning_rate</label>
+      <input type="range" min="1" max="10" step="1" value="3" id="lr-sl" oninput="updateParamChart()" style="flex:1;min-width:100px">
+      <span class="sval" id="lr-val">0.03</span>
+    </div>
+    <div class="slider-row">
+      <label style="font-size:13px;color:var(--color-text-secondary);min-width:130px">n_estimators</label>
+      <input type="range" min="10" max="300" step="10" value="100" id="ne-sl" oninput="updateParamChart()" style="flex:1;min-width:100px">
+      <span class="sval" id="ne-val">100</span>
+    </div>
+    <div class="slider-row">
+      <label style="font-size:13px;color:var(--color-text-secondary);min-width:130px">max_depth</label>
+      <input type="range" min="1" max="10" step="1" value="3" id="md-sl" oninput="updateParamChart()" style="flex:1;min-width:100px">
+      <span class="sval" id="md-val">3</span>
+    </div>
+
+    <canvas id="paramCanvas" height="180" style="width:100%;margin-top:12px"></canvas>
+    <div id="param-diagnosis" class="why" style="margin-top:8px"></div>
+  </div>
+
+  <div class="card">
+    <h3>Learning rate — the most important parameter</h3>
+    <p class="sub">Controls how much each weak learner contributes to the final model. Think of it as "how big a step do we take after each correction".</p>
+    <div class="code">GradientBoostingClassifier(learning_rate=0.1)   # default — good starting point
+GradientBoostingClassifier(learning_rate=0.01)  # small steps, need more trees
+GradientBoostingClassifier(learning_rate=0.5)   # large steps, risk overfitting</div>
+    <div class="why">Golden rule: lower learning_rate + higher n_estimators = better model, but slower to train. High learning_rate + few estimators = fast but risky (jumps over the optimal point). Always tune these two together.</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:10px">
+      <div style="background:#FCEBEB;border-radius:var(--border-radius-md);padding:10px;text-align:center">
+        <div style="font-size:12px;font-weight:500;color:#501313">lr = 0.5</div>
+        <div style="font-size:11px;color:#A32D2D;margin-top:4px">Takes huge steps. Overshoots. Overfits fast.</div>
+      </div>
+      <div style="background:#E1F5EE;border-radius:var(--border-radius-md);padding:10px;text-align:center">
+        <div style="font-size:12px;font-weight:500;color:#085041">lr = 0.1</div>
+        <div style="font-size:11px;color:#0F6E56;margin-top:4px">Sweet spot. Good accuracy with ~100 trees.</div>
+      </div>
+      <div style="background:#FAEEDA;border-radius:var(--border-radius-md);padding:10px;text-align:center">
+        <div style="font-size:12px;font-weight:500;color:#412402">lr = 0.01</div>
+        <div style="font-size:11px;color:#633806;margin-top:4px">Very careful. Needs 500+ trees. Slow.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>n_estimators — number of trees</h3>
+    <p class="sub">How many weak learners to add sequentially. More trees = model learns more — but past a point it memorises noise (overfitting).</p>
+    <div class="code">GradientBoostingClassifier(n_estimators=100)   # default
+GradientBoostingClassifier(n_estimators=500)   # more trees, better but slower
+GradientBoostingClassifier(n_estimators=50)    # fewer trees, faster but weaker</div>
+    <div class="warn">Unlike Random Forest where more trees always helps, Gradient Boosting CAN overfit with too many trees. Use early stopping or cross-validation to find the optimal number.</div>
+  </div>
+
+  <div class="card">
+    <h3>max_depth — complexity of each weak learner</h3>
+    <p class="sub">In gradient boosting, shallow trees (low depth) are preferred because the boosting process compensates for their weakness through sequential learning.</p>
+    <div class="code">GradientBoostingClassifier(max_depth=3)   # default — usually best for boosting
+GradientBoostingClassifier(max_depth=1)   # stumps (single split) — very weak but safe
+GradientBoostingClassifier(max_depth=5)   # deeper trees — risk of overfitting</div>
+    <div class="why">Unlike Random Forest where max_depth=None is fine, Gradient Boosting prefers max_depth=3 or less. Deeper trees in boosting can dominate the early iterations and cause overfitting before the sequential correction process can kick in.</div>
+  </div>
+
+</div>
+
+<!-- ===== CODE ===== -->
+<div id="code" class="sec">
+
+  <div class="card">
+    <h3>Full gradient boosting + random forest comparison code</h3>
+    <div class="code">from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier
+from sklearn.datasets import load_breast_cancer
+from sklearn.model_selection import train_test_split, GridSearchCV
+from sklearn.metrics import accuracy_score, classification_report
+import numpy as np
+
+# Load dataset
+data = load_breast_cancer()
+X, y = data.data, data.target
+
+# Split
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42
+)</div>
+
+    <div class="code"># ── GRADIENT BOOSTING ──────────────────────────────────────────────
+gb_model = GradientBoostingClassifier(
+    n_estimators=100,    # 100 weak learners added sequentially
+    learning_rate=0.1,   # each learner contributes 10% of its prediction
+    max_depth=3,         # shallow trees (best for boosting)
+    random_state=42
+)
+gb_model.fit(X_train, y_train)
+y_pred_gb = gb_model.predict(X_test)
+print(f"Gradient Boosting Accuracy: {accuracy_score(y_test, y_pred_gb):.4f}")</div>
+    <div class="why">The three parameters above (n_estimators, learning_rate, max_depth) are the holy trinity of gradient boosting. Tune these first before anything else.</div>
+
+    <div class="code"># ── RANDOM FOREST ──────────────────────────────────────────────────
+rf_model = RandomForestClassifier(
+    n_estimators=100,    # 100 trees, trained in parallel
+    max_depth=None,      # unlimited — RF handles overfitting through averaging
+    random_state=42
+)
+rf_model.fit(X_train, y_train)
+y_pred_rf = rf_model.predict(X_test)
+print(f"Random Forest Accuracy:     {accuracy_score(y_test, y_pred_rf):.4f}")</div>
+
+    <div class="code"># ── COMPARE SIDE BY SIDE ───────────────────────────────────────────
+models = {
+    'Gradient Boosting': gb_model,
+    'Random Forest':     rf_model
+}
+for name, model in models.items():
+    preds = model.predict(X_test)
+    acc   = accuracy_score(y_test, preds)
+    print(f"\n{name}")
+    print(f"Accuracy: {acc:.4f}")
+    print(classification_report(y_test, preds,
+          target_names=data.target_names))</div>
+
+    <div class="code"># ── GRID SEARCH FOR GRADIENT BOOSTING ─────────────────────────────
+param_grid = {
+    'n_estimators':  [50, 100, 200],
+    'learning_rate': [0.01, 0.1, 0.2],
+    'max_depth':     [2, 3, 5]
+}
+# 3×3×3 = 27 combinations × 5 folds = 135 model trainings
+
+gs = GridSearchCV(
+    estimator=GradientBoostingClassifier(random_state=42),
+    param_grid=param_grid,
+    cv=5,
+    scoring='accuracy',
+    n_jobs=-1
+)
+gs.fit(X_train, y_train)
+print("Best params:", gs.best_params_)
+print("Best CV accuracy:", gs.best_score_.round(4))</div>
+  </div>
+
+  <div class="card">
+    <h3>Random Forest vs Gradient Boosting — when to use which</h3>
+    <div style="overflow-x:auto">
+      <table style="width:100%;border-collapse:collapse;font-size:13px">
+        <tr style="background:var(--color-background-secondary)">
+          <th style="padding:10px;text-align:left;border:0.5px solid var(--color-border-tertiary)">Situation</th>
+          <th style="padding:10px;text-align:left;border:0.5px solid var(--color-border-tertiary)">Use Random Forest</th>
+          <th style="padding:10px;text-align:left;border:0.5px solid var(--color-border-tertiary)">Use Gradient Boosting</th>
+        </tr>
+        <tr><td style="padding:10px;border:0.5px solid var(--color-border-tertiary)">Speed needed</td><td style="padding:10px;border:0.5px solid var(--color-border-tertiary)">✓ Trains faster (parallel)</td><td style="padding:10px;border:0.5px solid var(--color-border-tertiary)">Slower (sequential)</td></tr>
+        <tr style="background:var(--color-background-secondary)"><td style="padding:10px;border:0.5px solid var(--color-border-tertiary)">Max accuracy</td><td style="padding:10px;border:0.5px solid var(--color-border-tertiary)">Good</td><td style="padding:10px;border:0.5px solid var(--color-border-tertiary)">✓ Usually better (especially XGBoost)</td></tr>
+        <tr><td style="padding:10px;border:0.5px solid var(--color-border-tertiary)">Noisy data</td><td style="padding:10px;border:0.5px solid var(--color-border-tertiary)">✓ More robust to noise</td><td style="padding:10px;border:0.5px solid var(--color-border-tertiary)">Can overfit on noisy data</td></tr>
+        <tr style="background:var(--color-background-secondary)"><td style="padding:10px;border:0.5px solid var(--color-border-tertiary)">Kaggle competitions</td><td style="padding:10px;border:0.5px solid var(--color-border-tertiary)">Decent baseline</td><td style="padding:10px;border:0.5px solid var(--color-border-tertiary)">✓ XGBoost/LightGBM dominate</td></tr>
+        <tr><td style="padding:10px;border:0.5px solid var(--color-border-tertiary)">Tuning effort</td><td style="padding:10px;border:0.5px solid var(--color-border-tertiary)">✓ Less tuning needed</td><td style="padding:10px;border:0.5px solid var(--color-border-tertiary)">Needs careful tuning</td></tr>
+      </table>
+    </div>
+    <div class="good" style="margin-top:10px">Industry tip: start with Random Forest as your baseline. If you need better accuracy, switch to XGBoost (optimised Gradient Boosting). XGBoost is the most widely used ML algorithm in industry for tabular/structured data.</div>
+  </div>
+
+</div>
+
+<!-- ===== QUIZ ===== -->
+<div id="qz" class="sec">
+  <p class="sub" style="margin-bottom:14px">6 questions — straight from your notes.</p>
+  <div id="qs"></div>
+  <button onclick="resetQ()" style="margin-top:14px;font-size:13px;padding:8px 16px">↺ Reset</button>
+</div>
+
+<script>
+function showTab(id,btn){
+  document.querySelectorAll('.sec').forEach(s=>s.classList.remove('on'));
+  document.querySelectorAll('.tb').forEach(b=>b.classList.remove('on'));
+  document.getElementById(id).classList.add('on');
+  btn.classList.add('on');
+  if(id==='boost') buildBoostSteps();
+  if(id==='gb') buildGBStepper();
+  if(id==='params') setTimeout(updateParamChart,50);
+  if(id==='qz') buildQuiz();
+}
+
+// ── BOOSTING STEPS ──
+const boostSteps=[
+  {title:'Start: all data points equal',body:'Every row in the dataset starts with the same weight — no row is more important than another.',data:[3,5,2,7,4,6,3,8,2,5],err:[false,false,false,false,false,false,false,false,false,false],desc:'All dots = same size (equal weight). Model 1 is about to train on this.'},
+  {title:'Model 1 trains and makes errors',body:'Model 1 learns from the data. It gets most right, but misses some (shown in red). Those wrong ones now get a higher weight.',data:[3,5,2,7,4,6,3,8,2,5],err:[false,false,true,false,true,false,false,true,false,false],desc:'Red dots = Model 1 got these wrong. They will get bigger weights for Model 2.'},
+  {title:'Model 2 — focuses on the hard cases',body:'Model 2 trains with higher weights on the previously misclassified points. It MUST pay more attention to them.',data:[3,5,6,7,9,6,3,12,2,5],err:[false,false,false,false,true,false,false,false,false,true],desc:'Previously wrong points are larger (higher weight). Model 2 focuses on them and fixes most — but still makes a few new errors.'},
+  {title:'Model 3 — corrects remaining errors',body:'Model 3 gets higher weights on whatever Model 2 still got wrong. Each model learns from the whole team\'s history of mistakes.',data:[3,5,6,7,12,6,3,10,2,9],err:[false,false,false,false,false,false,false,false,false,false],desc:'After 3 models, all data points are correctly handled. The combined prediction of all 3 models is much stronger.'},
+  {title:'Final: weighted combination',body:'The final answer = weighted vote of all models. Models with higher accuracy get a higher vote weight (AdaBoost). Or all residuals are summed (Gradient Boosting).',data:[3,5,6,7,12,6,3,10,2,9],err:[false,false,false,false,false,false,false,false,false,false],desc:'Each model contributed a piece. Weak learners combined = strong learner. This is the boosting magic.'}
+];
+let boostStep=0;
+function buildBoostSteps(){
+  const c=document.getElementById('boost-steps');
+  if(c.innerHTML) return;
+  c.innerHTML='<div id="boost-vis" style="background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:16px;margin-bottom:12px"><canvas id="boostCanvas" height="120" style="width:100%"></canvas><div id="boost-desc" style="font-size:12px;color:var(--color-text-secondary);margin-top:8px"></div></div><div id="boost-body" style="font-size:13px;color:var(--color-text-secondary)"></div>';
+  renderBoostStep();
+}
+function renderBoostStep(){
+  document.getElementById('boost-step-label').textContent=`Step ${boostStep+1} of ${boostSteps.length}`;
+  const s=boostSteps[boostStep];
+  document.getElementById('boost-body').innerHTML=`<strong style="color:var(--color-text-primary)">${s.title}</strong><br>${s.body}`;
+  document.getElementById('boost-desc').textContent=s.desc;
+  const canvas=document.getElementById('boostCanvas');
+  if(!canvas) return;
+  const ctx=canvas.getContext('2d');
+  const W=canvas.offsetWidth||560,H=120;
+  canvas.width=W;canvas.height=H;
+  ctx.clearRect(0,0,W,H);
+  const n=s.data.length;
+  s.data.forEach((size,i)=>{
+    const x=40+(i/(n-1))*(W-80);
+    const y=60;
+    const r=size*2.2;
+    ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);
+    if(s.err[i]){ctx.fillStyle='#FCEBEB';ctx.strokeStyle='#E24B4A';}
+    else{ctx.fillStyle='#E1F5EE';ctx.strokeStyle='#1D9E75';}
+    ctx.fill();ctx.lineWidth=1;ctx.stroke();
+  });
+}
+function nextBoostStep(){if(boostStep<boostSteps.length-1){boostStep++;renderBoostStep();}}
+function prevBoostStep(){if(boostStep>0){boostStep--;renderBoostStep();}}
+buildBoostSteps();
+
+// ── GRADIENT BOOSTING STEPPER ──
+const gbSteps=[
+  {num:1,title:'Initialise model',body:'Start with the simplest possible prediction — the mean of the target variable. This is your starting point before any learning happens.',code:`prediction_0 = mean(y_train)  # e.g. 187.5 for bike rentals
+# All rows get the same starting prediction`},
+  {num:2,title:'Compute residuals',body:'Residuals = actual − predicted. These are the ERRORS your current model makes. The next weak learner\'s job is to predict these residuals.',code:`residuals = y_actual - current_prediction
+# [100-187.5, 200-187.5, 150-187.5, 300-187.5]
+# = [-87.5, +12.5, -37.5, +112.5]`},
+  {num:3,title:'Fit a weak learner on residuals',body:'Train a shallow decision tree (e.g. max_depth=3) to predict the residuals — not the original target. The tree learns "where is the model still wrong?"',code:`weak_learner = DecisionTreeRegressor(max_depth=3)
+weak_learner.fit(X_train, residuals)
+# Tree learns to predict [-87.5, +12.5, -37.5, +112.5]`},
+  {num:4,title:'Update predictions',body:'Add the weak learner\'s predictions to the current model. Scaled by learning_rate so we don\'t overcorrect in one step.',code:`new_prediction = current_prediction + learning_rate * weak_learner.predict(X)
+# 0.1 learning rate means: "take 10% of the correction"
+# new = [187.5 + 0.1×(-80), 187.5 + 0.1×(+15), ...]`},
+  {num:5,title:'Repeat until n_estimators reached',body:'Go back to step 2 with the new, improved predictions. New residuals are smaller. Next weak learner corrects what\'s still left over. This loop runs n_estimators times.',code:`for i in range(n_estimators):
+    residuals       = y_actual - current_prediction  # step 2
+    weak_learner.fit(X_train, residuals)              # step 3
+    current_prediction += lr * weak_learner.predict(X) # step 4
+# Final model = sum of all weak learners (scaled by lr)`}
+];
+let gbStep=0;
+function buildGBStepper(){
+  const c=document.getElementById('gb-stepper');
+  if(c.innerHTML) return;
+  c.innerHTML='<div id="gb-step-body" style="background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:16px"></div>';
+  renderGBStep();
+}
+function renderGBStep(){
+  document.getElementById('gb-label').textContent=`Step ${gbStep+1} of ${gbSteps.length}`;
+  const s=gbSteps[gbStep];
+  const pills=gbSteps.map((st,i)=>`<span class="step-pill ${i<gbStep?'step-done':i===gbStep?'step-active':'step-todo'}">${i<gbStep?'✓':st.num}</span>`).join('');
+  document.getElementById('gb-step-body').innerHTML=`
+    <div style="margin-bottom:12px">${pills}</div>
+    <div style="font-size:14px;font-weight:500;color:var(--color-text-primary);margin-bottom:6px">Step ${s.num}: ${s.title}</div>
+    <p class="sub">${s.body}</p>
+    <div class="code">${s.code}</div>`;
+}
+function nextGB(){if(gbStep<gbSteps.length-1){gbStep++;renderGBStep();}}
+function prevGB(){if(gbStep>0){gbStep--;renderGBStep();}}
+
+// ── PARAM CHART ──
+function updateParamChart(){
+  const lrIdx=+document.getElementById('lr-sl').value;
+  const ne=+document.getElementById('ne-sl').value;
+  const md=+document.getElementById('md-sl').value;
+  const lrVals=[0.001,0.01,0.02,0.05,0.1,0.15,0.2,0.3,0.5,0.8];
+  const lr=lrVals[lrIdx-1];
+  document.getElementById('lr-val').textContent=lr.toString();
+  document.getElementById('ne-val').textContent=ne;
+  document.getElementById('md-val').textContent=md;
+
+  const canvas=document.getElementById('paramCanvas');
+  if(!canvas) return;
+  const ctx=canvas.getContext('2d');
+  const W=canvas.offsetWidth||560,H=180;
+  canvas.width=W;canvas.height=H;
+  const isDark=window.matchMedia('(prefers-color-scheme:dark)').matches;
+  const txtColor=isDark?'#c2c0b6':'#444441';
+  const gridColor=isDark?'rgba(255,255,255,0.07)':'rgba(0,0,0,0.07)';
+  ctx.clearRect(0,0,W,H);
+  for(let i=0;i<=4;i++){const y=20+i*(H-40)/4;ctx.strokeStyle=gridColor;ctx.lineWidth=0.5;ctx.beginPath();ctx.moveTo(40,y);ctx.lineTo(W-10,y);ctx.stroke();}
+
+  const maxN=300;
+  const peakAcc=Math.min(0.98, 0.70 + md*0.025 + lr*0.3 + (ne/300)*0.08);
+  const peakN=Math.max(20, Math.round(80/(lr*10)));
+  const overfit=md>4?0.001*md:0;
+
+  function trainAcc(n){
+    const rise=1-Math.exp(-n/(peakN*0.3));
+    return Math.min(0.995, 0.70+rise*(peakAcc-0.70)*1.1);
+  }
+  function valAcc(n){
+    const rise=1-Math.exp(-n/peakN);
+    const drop=overfit*Math.max(0,n-peakN*1.5);
+    return Math.min(peakAcc, 0.68+rise*(peakAcc-0.68))-drop;
+  }
+
+  ctx.beginPath();ctx.strokeStyle='#185FA5';ctx.lineWidth=2;
+  for(let i=0;i<=maxN;i++){
+    const x=40+(i/maxN)*(W-50);
+    const y=H-20-Math.max(0.5,trainAcc(i))*(H-40);
+    i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+  }ctx.stroke();
+
+  ctx.beginPath();ctx.strokeStyle='#1D9E75';ctx.lineWidth=2;ctx.setLineDash([5,3]);
+  for(let i=0;i<=maxN;i++){
+    const x=40+(i/maxN)*(W-50);
+    const y=H-20-Math.max(0.4,valAcc(i))*(H-40);
+    i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+  }ctx.stroke();ctx.setLineDash([]);
+
+  const nx=40+(ne/maxN)*(W-50);
+  ctx.strokeStyle='#EF9F27';ctx.lineWidth=1;ctx.setLineDash([3,3]);
+  ctx.beginPath();ctx.moveTo(nx,20);ctx.lineTo(nx,H-20);ctx.stroke();ctx.setLineDash([]);
+
+  ctx.fillStyle=txtColor;ctx.font='11px sans-serif';
+  ctx.fillStyle='#185FA5';ctx.fillRect(W-110,10,8,8);ctx.fillStyle=txtColor;ctx.fillText('train accuracy',W-98,18);
+  ctx.fillStyle='#1D9E75';ctx.fillRect(W-110,26,8,8);ctx.fillStyle=txtColor;ctx.fillText('val accuracy',W-98,34);
+  ctx.fillStyle='#EF9F27';ctx.fillText(`n=${ne}`,nx+4,36);
+  ctx.fillStyle=txtColor;ctx.fillText('n_estimators →',W-100,H-4);
+
+  const tAcc=trainAcc(ne),vAcc=valAcc(ne);
+  const gap=tAcc-vAcc;
+  const el=document.getElementById('param-diagnosis');
+  if(gap>0.08){el.textContent=`Gap = ${(gap*100).toFixed(1)}% — overfitting detected. Try reducing learning_rate, max_depth, or n_estimators.`;el.className='warn'}
+  else if(vAcc<0.78){el.textContent=`Val accuracy = ${(vAcc*100).toFixed(1)}% — model is underfitting. Increase n_estimators or learning_rate.`;el.className='danger warn'}
+  else{el.textContent=`Looking good! Train ${(tAcc*100).toFixed(1)}%, Val ${(vAcc*100).toFixed(1)}%. Gap = ${(gap*100).toFixed(1)}% — acceptable.`;el.className='good'}
+}
+
+// ── QUIZ ──
+const qs=[
+  {q:"Boosting trains models sequentially. What does 'sequentially' mean?",opts:["All models train at the same time on the same data","Each model trains one after another, where each one focuses on correcting the previous model's errors","Models are sorted by accuracy before training","The dataset is split sequentially into equal parts"],ans:1,ex:"Sequential = one at a time. Model 2 can't start until Model 1 finishes, because Model 2 needs to know Model 1's errors to focus on them. This is the key difference from bagging (which is parallel)."},
+  {q:"In gradient boosting, what does each weak learner learn to predict?",opts:["The original target variable y","The residuals (errors = actual − current prediction)","The mean of the dataset","The probability that each sample is misclassified"],ans:1,ex:"Each weak learner predicts the RESIDUALS — the gap between what the current model predicts and the actual values. By adding these residual predictions to the current prediction (scaled by learning_rate), the model gradually improves."},
+  {q:"You set learning_rate=0.5. What is likely to happen?",opts:["The model trains faster and generalises better","The model takes large correction steps and risks overshooting — likely to overfit","The model needs fewer trees to converge","No effect — learning_rate doesn't matter in gradient boosting"],ans:1,ex:"A high learning_rate means each weak learner's contribution is large. The model 'jumps' aggressively toward fitting the training data — often overshooting the optimal point and overfitting. Best practice: use small learning_rate (0.01–0.1) with more n_estimators."},
+  {q:"Why is max_depth=3 recommended for gradient boosting (unlike Random Forest where None is fine)?",opts:["Gradient boosting uses more memory so trees must be shallow","In boosting, deep trees in early rounds can dominate and overfit before the sequential correction process can balance them","max_depth=3 is always better for all models","Shallow trees are faster and that's the only reason"],ans:1,ex:"In Random Forest, trees are independent and averaged — one deep tree's overfitting is diluted by 99 other trees. In boosting, early trees set the direction for all subsequent trees. A deep overfitting tree early on corrupts the whole sequential learning process."},
+  {q:"What is the relationship between learning_rate and n_estimators?",opts:["They are independent — tune them separately","Lower learning_rate requires higher n_estimators — they must be tuned together","Higher learning_rate always needs higher n_estimators","They control the same thing and only one should be set"],ans:1,ex:"Lower learning_rate = smaller steps = needs MORE trees to reach the same accuracy. Higher learning_rate = larger steps = needs FEWER trees. Always tune them together. A common strategy: start with lr=0.1, find best n_estimators, then lower lr and increase n_estimators proportionally."},
+  {q:"After training both models, Gradient Boosting scores 96.5% and Random Forest scores 95.8% on the same test set. What should you consider before declaring Gradient Boosting the winner?",opts:["Gradient Boosting is always better — no need to consider anything","Whether the difference is significant, training time, overfitting risk, and cross-validation scores (not just one test split)","Random Forest must have a bug if it scored lower","The number of trees must be the same for a fair comparison"],ans:1,ex:"A 0.7% difference on one test split could be noise. Always check: (1) CV scores to confirm consistency, (2) training time difference, (3) whether GB is overfitting (gap between train and val), (4) simplicity of the model. Sometimes RF's lower accuracy + simpler tuning is the better engineering choice."}
+];
+let done={};
+function buildQuiz(){
+  const c=document.getElementById('qs');
+  if(c.children.length)return;
+  qs.forEach((q,qi)=>{
+    const d=document.createElement('div');
+    d.className='card';
+    d.innerHTML=`<p style="font-weight:500;font-size:14px;margin:0 0 10px">Q${qi+1}. ${q.q}</p>
+      ${q.opts.map((o,oi)=>`<button class="qopt" onclick="answer(${qi},${oi})">${o}</button>`).join('')}
+      <div class="fb" id="fb${qi}"></div>`;
+    c.appendChild(d);
+  });
+}
+function answer(qi,oi){
+  if(done[qi]!=null)return;
+  done[qi]=oi;
+  const card=document.querySelectorAll('#qs .card')[qi];
+  const btns=card.querySelectorAll('.qopt');
+  btns[oi].classList.add(oi===qs[qi].ans?'c':'w');
+  if(oi!==qs[qi].ans)btns[qs[qi].ans].classList.add('c');
+  btns.forEach(b=>b.style.pointerEvents='none');
+  const fb=document.getElementById('fb'+qi);
+  fb.textContent=(oi===qs[qi].ans?'✓ Correct! ':'✗ Not quite. ')+qs[qi].ex;
+  fb.className='fb on '+(oi===qs[qi].ans?'c':'w');
+}
+function resetQ(){done={};document.getElementById('qs').innerHTML='';buildQuiz();}
+</script>
